@@ -278,7 +278,7 @@ def ApplyTextureAnchor(texture,anchor='default'):
 	if anchor == 'center':
 		texture.anchor_x = texture.width // 2
 		texture.anchor_y = texture.height // 2
-	elif type(anchor) is type((0,)):
+	elif type(anchor) is tuple:
 		texture.anchor_x = anchor[0]
 		texture.anchor_y = anchor[1]
 
