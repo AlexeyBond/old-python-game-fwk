@@ -1,6 +1,6 @@
 # coding=UTF-8
 from fwk.ui.layer import Layer
-from fwk.util import *
+from fwk.util.all import *
 
 class StaticBackgroundLauer(Layer):
 	'''

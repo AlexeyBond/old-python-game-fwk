@@ -6,7 +6,7 @@ from fwk.ui.screen import AppScreen
 from fwk.ui.console import GAME_CONSOLE
 from fwk.ui.layers.staticBg import StaticBackgroundLauer
 
-from fwk.util import *
+from fwk.util.all import *
 
 @AppScreen.ScreenClass('STARTUP')
 class StartupScreen(AppScreen):
@@ -21,6 +21,7 @@ class StartupScreen(AppScreen):
 		GAME_CONSOLE.write('SSC:Key down:',KEY.symbol_string(key),'(',key,') [+',KEY.modifiers_string(mod),']')
 
 	def draw(self):
+		AppScreen.draw(self)
 		r = Rect(bottom=100,height=30,left=50,width=50)
 		DrawWireframeRect(r)
 		r.resize(width=100,height=300,origin='bottom-left')
