@@ -81,6 +81,8 @@ class Events(object):
 			self._handlers[event] = []
 			return
 
+		if callback in self._handlers.get(event,[]):
+			self._handlers[event].remove(callback)
 
 	def trigger(self,event,*args,**kwargs):
 		'''
