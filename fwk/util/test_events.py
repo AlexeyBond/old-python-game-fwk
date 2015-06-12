@@ -73,7 +73,16 @@ class MyTestBaseEvents(Events):
 	def on_tubudums(self,*args,**kwargs):
 		self.mock('base:on_tubudums',self,*args,**kwargs)
 
-class MyTestDerivedEvents(MyTestBaseEvents):
+class MyTestMixinEvents:
+	events = [
+		'mixboom'
+	]
+
+	@Events.important
+	def mixboom(self,*args,**kwargs):
+		self.mock('mixin:mixboom',self,*args,**kwargs)
+
+class MyTestDerivedEvents(MyTestBaseEvents,MyTestMixinEvents):
 	events = [
 		'budums',
 		('tubudums','on_tubudums')
@@ -97,6 +106,7 @@ class EventsInheritTest(TestCase):
 		self.assertTrue(self.events.listening('budums'))
 		self.assertTrue(self.events.listening('boom'))
 		self.assertTrue(self.events.listening('boboom'))
+		self.assertTrue(self.events.listening('mixboom'))
 		self.assertFalse(self.events.listening('bams'))
 
 	def test_base_event_trigger(self):
@@ -116,3 +126,8 @@ class EventsInheritTest(TestCase):
 		self.events.mock.reset_mock()
 		self.events.trigger('tubudums',1,2,3)
 		self.events.mock.assert_called_with('base:on_tubudums',self.events,1,2,3)
+
+	def test_mixin_event_trigger(self):
+		self.events.mock.reset_mock()
+		self.events.trigger('mixboom',3,2,1)
+		self.events.mock.assert_called_with('mixin:mixboom',self.events,3,2,1)
