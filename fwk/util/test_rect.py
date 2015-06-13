@@ -39,5 +39,18 @@ class RectResizeTest(TestCase):
 		self.assertEqual(self.rect.right,500)
 
 class RectMoveTest(TestCase):
+	def setUp(self):
+		self.rect = Rect(top=1,bottom=-1,left=-1,right=1)
 	def test_move_center(self):
-		pass
+		self.rect.moveTo(20,10,'center-center')
+		self.assertEqual(self.rect.top,11)
+		self.assertEqual(self.rect.right,21)
+		self.assertEqual(self.rect.width,2)
+		self.assertEqual(self.rect.height,2)
+
+	def test_move_bottom_left(self):
+		self.rect.moveTo(30,40,'bottom-left')
+		self.assertEqual(self.rect.bottom,40)
+		self.assertEqual(self.rect.left,30)
+		self.assertEqual(self.rect.width,2)
+		self.assertEqual(self.rect.height,2)

@@ -1,6 +1,6 @@
 # coding=UTF-8
 
-class Rect:
+class Rect(object):
 	'''
 	Класс прямоугольника.
 	'''
@@ -42,15 +42,17 @@ class Rect:
 			print 'I`ve got:',str(locals())
 			raise e
 
-	def getWidth(self):
+	@property
+	def width(self):
 		'''
-		Возвращает ширину прямоугольника.
+		Ширина прямоугольника.
 		'''
 		return self.right - self.left
 
-	def getHeight(self):
+	@property
+	def height(self):
 		'''
-		Возвращает высоту прямоугольника.
+		Высота прямоугольника.
 		'''
 		return self.top - self.bottom
 
