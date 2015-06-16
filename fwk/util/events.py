@@ -14,7 +14,7 @@ class Events(object):
 
 	def __init__(self):
 		self._handlers = {}
-		self._listen = ['all']
+		self._listen = []
 		self._subscriptions = []
 
 		self._init_events()
@@ -97,19 +97,18 @@ class Events(object):
 		for cb in lst:
 			cb(*args,**kwargs)
 
-	def listen(self,event):
+	def listen(self,event,listen=True):
 		'''
-		Слушать событие
+		Слушать событие. Или не слушать если listen=False
 		'''
-		if event not in self._listen:
-			self._listen.append(event)
+		if (event in self._listen) != listen:
+			getattr(self._listen,'append' if listen else 'remove')(event)
 
-	def ignore(self,event):
+	def ignore(self,event,ignore=True):
 		'''
-		Не слушать событие
+		То же, что и listen, только наоборот.
 		'''
-		if event in self._listen:
-			self._listen.remove(event)
+		return self.listen(event,not ignore)
 
 	def listening(self,event):
 		'''
@@ -124,6 +123,7 @@ class Events(object):
 		callback = lambda *args, **kwargs: self.trigger(event,*args,**kwargs)
 		self._subscriptions.append(Events.Subscribtion(obj,event,callback))
 
+	#TODO: Добавить отписку от отдельных событий/объектов.
 	def unsubscribe_all(self):
 		'''
 		Отписаться от всех подписок на события
