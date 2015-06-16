@@ -35,3 +35,6 @@ def DrawWireframeRect(rect):
 	pyglet.gl.glVertex2f(rect.right,rect.bottom)
 	pyglet.gl.glVertex2f(rect.left,rect.bottom)
 	pyglet.gl.glEnd( )
+
+def BlitTextureToRect(texture,rect):
+	texture.blit(x=rect.left,y=rect.bottom,width=rect.width,height=rect.height)
