@@ -79,10 +79,26 @@ class Rect(object):
 	def resize(self,width,height,origin=_DEFAULT_ORIGIN):
 		'''
 		Изменяет размер прямоугольника, масштабируя его вокруг заданной опорной точки.
+
+		Возвращает ссылку на объект, на котором был вызван метод.
 		'''
 		ox, oy = self.getOriginPoint(origin)
 		self.left, self.right = Rect._resize_dimension(self.left,self.right,ox,width)
 		self.bottom, self.top = Rect._resize_dimension(self.bottom,self.top,oy,height)
+
+		return self
+
+	def scale(self,scaleX,scaleY=None,origin=_DEFAULT_ORIGIN):
+		'''
+		Масштабирует прямоугольник по осям X и Y, или одинаково по всем осям,
+			если передано одно значение.
+
+		Возвращает ссылку на объект, на котором был вызван метод.
+		'''
+		if scaleY == None:
+			scaleY = scaleX
+
+		return self.resize(self.width*scaleX,self.height*scaleY,origin)
 
 	@staticmethod
 	def _moveTo_dimension(curMin,curMax,orig,target):
@@ -93,13 +109,70 @@ class Rect(object):
 		'''
 		Перемещает прямоугольник так, что заданная опорная точка оказывается
 			в указанных координатах.
+
+		Возвращает ссылку на объект, на котором был вызван метод.
 		'''
 		ox, oy = self.getOriginPoint(origin)
 		self.left, self.right = Rect._moveTo_dimension(self.left,self.right,ox,x)
 		self.bottom, self.top = Rect._moveTo_dimension(self.bottom,self.top,oy,y)
+
+		return self
 
 	def clone(self):
 		'''
 		Создаёт копию прямоугольника.
 		'''
 		return Rect(bottom=self.bottom,top=self.top,left=self.left,right=self.right)
+
+	@staticmethod
+	def _inset_dimension(minVal,maxVal,insVal):
+		minVal += insVal
+		maxVal -= insVal
+
+		if minVal > maxVal:
+			midVal = (minVal + maxVal) / 2
+			minVal = midVal
+			maxVal = midVal
+
+		return minVal, maxVal
+
+	def inset(self,x,y=None):
+		'''
+		Вдавливает прямоугольник по осям X и Y, или одинаково по всем осям,
+			если передано только одно значение.
+		Значения могут быть отрицательными.
+		Если ширина или высота после изменения координат становятся
+			отрицательными, то обе координаты краёв (левого/правого или
+			нижнего/верхнего) устанавливаются в среднее между ними значение.
+
+		Возвращает ссылку на объект, на котором был вызван метод.
+		'''
+		if y == None:
+			y = x
+
+		self.left, self.right = Rect._inset_dimension(self.left,self.right,x)
+		self.bottom, self.top = Rect._inset_dimension(self.bottom,self.top,y)
+
+		return self
+
+	def extrude(self,x,y=None):
+		'''
+		Выполняет действие, противоположное действию inset.
+		'''
+		if y == None:
+			y = x
+
+		return self.inset(-x,-y)
+
+	def __eq__(self,other):
+		try:
+			return	self.left == other.left		\
+				and	self.right == other.right	\
+				and	self.bottom == other.bottom	\
+				and	self.top == other.top
+		except AttributeError:
+			return False
+
+	def __repr__(self):
+		print self.__dict__
+		return '<Rect left={left} right={right} bottom={bottom} top={top}>'.format(**self.__dict__)
