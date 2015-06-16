@@ -3,6 +3,8 @@ import math
 
 from fwk.util.events import Events
 
+import fwk.game.entity_mixin as _entity_mixins
+
 class GameEntity(Events):
 	'''
 	Класс игровой сущности.
@@ -37,17 +39,13 @@ class GameEntity(Events):
 		self.game = None
 		self.sprite = None
 		self.id = None
-		self.angularVelocity = 0
 
 	events = [
 		'spawn',
 		'update',
 		'destroy',
 		('hide','on_hide'),
-		('show','on_show'),
-		('transform:move','on_move'),
-		('transform:scale','on_scale'),
-		('transform:rotate','on_rotate'),
+		('show','on_show')
 	]
 
 	def getDirection(self):
@@ -69,7 +67,6 @@ class GameEntity(Events):
 		if (self._x, self._y) == val:
 			return
 		self._x, self._y = val
-		self.trigger('transform:move')
 		self._transform_changed = True
 
 	@property
@@ -82,7 +79,6 @@ class GameEntity(Events):
 	@rotation.setter
 	def rotation(self,val):
 		self._rotation = val
-		self.trigger('transform:rotate')
 		self._transform_changed = True
 
 	@property
@@ -95,7 +91,6 @@ class GameEntity(Events):
 	@scale.setter
 	def scale(self,val):
 		self._scale = val
-		self.trigger('transform:scale')
 		self._transform_changed = True
 
 	def spawn(self):
@@ -105,3 +100,5 @@ class GameEntity(Events):
 	def destroy(self):
 		# Отказ от всех подписок
 		self.unsubscribe_all()
+
+	mixin = _entity_mixins
