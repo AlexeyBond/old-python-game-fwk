@@ -174,5 +174,4 @@ class Rect(object):
 			return False
 
 	def __repr__(self):
-		print self.__dict__
 		return '<Rect left={left} right={right} bottom={bottom} top={top}>'.format(**self.__dict__)
