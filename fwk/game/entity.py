@@ -9,21 +9,26 @@ class GameEntity(Events):
 	'''
 	Класс игровой сущности.
 
-	Аттрибуты:
+	Аттрибуты/свойства:
 		game		- ссылка на объект игрового мира
 		position	- координаты центра сущности в игровом мире
-		rotation	- поворот сущности #TODO: определиться с еденицами измерения и направлением поворота
-		scale		- масштаб спрайта сущности относительно оригинального размера
+		rotation	- поворот сущности #TODO: определиться с еденицами
+					  измерения и направлением поворота
+		scale		- масштаб спрайта сущности относительно
+					  оригинального размера
 		sprite		- спрайт
 		id			- уникальный идентификатор сущности
 	События:
 		spawn		- происходит при добавлении сущности в игровой мир
 		update		- происходит переодически.
 			Аргументы:
-				dt		- время, прошедшее с момента, когда событие произошло в прошлый раз.
+				dt		- время, прошедшее с момента, когда событие произошло
+						  в прошлый раз.
 		destroy		- происходит перед уничтожением сущности.
-		hide		- происходит когда сущность скрывается (обработчик: on_hide).
-		show		- происходит когда сущность становится видимой (обработчик on_show).
+		hide		- происходит когда сущность скрывается
+					  (обработчик: on_hide).
+		show		- происходит когда сущность становится видимой
+					  (обработчик on_show).
 	'''
 	def __init__(self):
 		Events.__init__(self)
@@ -35,6 +40,9 @@ class GameEntity(Events):
 
 		# Флаг изменения трансформации
 		self._transform_changed = True
+
+		# Флаг видимости
+		self._visible = False
 
 		self.game = None
 		self.sprite = None
@@ -54,6 +62,18 @@ class GameEntity(Events):
 		'''
 		#TODO: Разобраться с системами координат/единицами измерения углов и т.д.
 		return math.sin(self.rotation),math.cos(self.rotation)
+
+	@property
+	def visible(self):
+		'''
+		Свойство, указывающее, видима ли сущность
+		'''
+		return self._visible
+
+	@visible.setter
+	def visible(self,visible):
+		if visible != self.visible:
+			self.show(visible)
 
 	@property
 	def position(self):
@@ -100,5 +120,30 @@ class GameEntity(Events):
 	def destroy(self):
 		# Отказ от всех подписок
 		self.unsubscribe_all()
+
+	def show(self,show=True):
+		'''
+		Показывает сущность
+		'''
+		if (not show) != (not self.visible):
+			self.trigger('show' if show else 'hide')
+
+	def hide(self,hide=True):
+		'''
+		Скрывает сущность
+		'''
+		return self.show(not hide)
+
+	def on_show(self):
+		self._visible = True
+
+	def on_hide(self):
+		self._visible = False
+
+	def addTags(self,*tags):
+		pass
+
+	def clearTags(self,*tags):
+		pass
 
 	mixin = _entity_mixins
