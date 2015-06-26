@@ -146,4 +146,39 @@ class GameEntity(Events):
 	def clearTags(self,*tags):
 		pass
 
+	def configure(self,config):
+		'''
+		Конфигурирует сущность в соответствии с заданным набором пар
+			ключ-значение. Используется при загрузке уровня.
+
+		Фактически выполняет присвоение аттрибутов при помощи setattr.
+		Игнорирует ключи, начинающиеся с '_'.
+		'''
+		for key,value in config.items():
+			if not key.startswith('_')
+				setattr(self,key,value)
+
+	_classDefs = {}
+
+	@staticmethod
+	def defineClass(className):
+		'''
+		Декоратор, присваивающий классу сущностей обозначение, используемое
+			при загрузке уровня.
+		'''
+		def _decorator(eclass):
+			if GameEntity not in eclass.__bases__:
+				raise Exception('Programming error: @GameEntity.defineClass decorator used on non-entity class {}.'.format(eclass.__name__))
+			GameEntity._classDefs[className] = eclass
+			return eclass
+		return _decorator
+
+	@staticmethod
+	def getClass(className):
+		'''
+		Метод, позволяющий найти класс сущностей по обозначению, присвренному
+			декоратором defineClass.
+		'''
+		return GameEntity._classDefs.get(className,None)
+
 	mixin = _entity_mixins

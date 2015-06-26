@@ -2,6 +2,7 @@
 import math
 
 from fwk.util.events import Events
+from fwk.game.entity import GameEntity
 
 class Game(Events):
 	'''
@@ -55,6 +56,22 @@ class Game(Events):
 		'''
 		for eset in self._tagged_entities.values():
 			eset.discard(entity)
+
+	def loadEntities(self,worldDesc):
+		'''
+		Создаёт сущности по описанию игрового мира.
+		'''
+		for entdesc in worldDesc.get('entities',[]):
+			_class = entdesc['_class']
+			eclass = GameEntity.getClass(_class)
+
+			if eclass == None:
+				print 'Invalid entity class name given:', _class
+				continue
+
+			entity = eclass()
+			self.addEntity(entity)
+			entity.configure(entdesc)
 
 	def createSprite(self,image,zindex=0,**kwargs):
 		'''
