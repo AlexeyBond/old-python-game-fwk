@@ -2,15 +2,20 @@
 
 class Events(object):
 	class Subscribtion:
-		def __init__(self,obj,event,callback):
-			self.obj = obj
-			self.event = event
-			self.callback = callback
+		def __init__(self,publisher,subscriber,event):
+			self.publisher = publisher
+			self.subscriber = subscriber
+			self.pub_event = event
+			self.sub_event = event
 
-			self.obj.on(self.event,self.callback)
+		def enable(self):
+			self.publisher.on(self.pub_event,self._callback)
 
-		def unsubscribe(self):
-			self.obj.off(self.event,self.callback)
+		def disable(self):
+			self.publisher.off(self.pub_event,self._callback)
+
+		def _callback(self,*args,**kwargs):
+			self.subscriber.trigger(self.sub_event,*args,**kwargs)
 
 	def __init__(self):
 		self._handlers = {}
@@ -116,12 +121,17 @@ class Events(object):
 		'''
 		return event in self._listen
 
-	def subscribe(self,obj,event):
+	def subscribe(self,obj,*events):
 		'''
 		Подписаться на событие другого объекта
 		'''
-		callback = lambda *args, **kwargs: self.trigger(event,*args,**kwargs)
-		self._subscriptions.append(Events.Subscribtion(obj,event,callback))
+		for event in events:
+			if type(event) in (tuple,list):
+				self.subscribe(obj,*event)
+			else:
+				subscribtion = Events.Subscribtion(obj,self,event)
+				subscribtion.enable()
+				self._subscriptions.append(subscribtion)
 
 	#TODO: Добавить отписку от отдельных событий/объектов.
 	def unsubscribe_all(self):
@@ -129,7 +139,7 @@ class Events(object):
 		Отписаться от всех подписок на события
 		'''
 		for subscription in self._subscriptions:
-			subscription.unsubscribe()
+			subscription.disable()
 		self._subscriptions = []
 
 	@staticmethod
