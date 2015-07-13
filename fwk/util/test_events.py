@@ -3,6 +3,7 @@ from unittest import TestCase
 from mock import Mock
 
 from fwk.util.events import Events
+from fwk.util.events import Shedule
 
 class EventsTest(TestCase):
 	def setUp(self):
@@ -200,3 +201,39 @@ class EventsCallbackTest(TestCase):
 		cb = self.events.event('boom',1,2,bar='foo',baz='asd')
 		cb(3,4,baz='foo',qwe='rty')
 		self.mock.assert_called_with(1,2,3,4,bar='foo',baz='foo',qwe='rty')
+
+class EventsSheduleTest(TestCase):
+	def setUp(self):
+		self.mock1 = Mock()
+		self.mock2 = Mock()
+		self.shedule = Shedule()
+
+	def test_shedule_in(self):
+		self.shedule.sheduleIn(20,self.mock2,1,2,3,bar='baz')
+		self.shedule.sheduleIn(10,self.mock1,'qwe',asd='fgh')
+
+		self.shedule.perform_until_time(5)
+		self.assertEqual(self.mock1.call_count,0)
+		self.assertEqual(self.mock2.call_count,0)
+
+		self.shedule.perform_until_time(11)
+		self.mock1.assert_called_with('qwe',asd='fgh')
+		self.mock1.reset_mock()
+		self.assertEqual(self.mock2.call_count,0)
+
+		self.shedule.perform_until_time(21)
+		self.assertEqual(self.mock1.call_count,0)
+		self.mock2.assert_called_with(1,2,3,bar='baz')
+
+	def test_shedule_after(self):
+		self.shedule.sheduleAfter(10,self.mock1,1,2,3,asd='bar')
+
+		self.shedule.update(9)
+		self.assertEqual(self.mock1.call_count,0)
+
+		self.shedule.update(2)
+		self.mock1.assert_called_with(1,2,3,asd='bar')
+		self.mock1.reset_mock()
+
+		self.shedule.update(2)
+		self.assertEqual(self.mock1.call_count,0)

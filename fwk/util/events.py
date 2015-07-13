@@ -189,30 +189,50 @@ class Events(object):
 		return handler
 
 class Shedule(object):
+	class Task:
+		def __init__(self,time,callback,cargs,ckwargs):
+			self._time = time
+			self.execute = lambda: callback(*cargs,**ckwargs)
+
+		def __cmp__(self,other):
+			return self._time.__cmp__(other._time)
+
 	'''
-	Расписание событий. Позволяет произойти события в заданное время.
+	Расписание событий. Позволяет произойти события (или вызвать коллбэк) в
+		заданное время.
+
+	Доктор прописал использовать следующим образом:
+
+	e = Events()
+	s = Shedule()
+
+	s.sheduleIn(100,e.event('boom',1,2,3,foo='bar'))
+
+	Ну или так:
+
+	s.sheduleAfter(100,lambda x: cow.say('Hello, '+x),'world')
 	'''
 	#TODO: Добавить тесты.
 	def __init__(self):
 		self._tasks = []
 		self.currentTime = 0
 
-	def perform_until_time(time):
+	def perform_until_time(self,time):
 		'''
 		Выполнить все задачи, запланированные до заданного времени.
 		'''
 		while len(self._tasks) > 0:
 			task = self._tasks[0]
-			if task[0] > time:
+			if task._time > time:
 				return
-			task[1]()
+			task.execute()
 			self._tasks.remove(task)
 
-	def sheduleIn(self,time,callcack):
+	def sheduleIn(self,time,callcack,*args,**kwargs):
 		'''
 		Запланировать событие на заданное время.
 		'''
-		self._tasks.append((time,callcack))
+		self._tasks.append(Shedule.Task(time,callcack,args,kwargs))
 		self._tasks.sort()
 
 	def sheduleAfter(self,timeDelta,*args,**kwargs):
@@ -224,6 +244,9 @@ class Shedule(object):
 
 	def update(self,dt):
 		'''
+		Обновляет текущее время в соответствии с прошедшим промежутком
+			времени (dt), а так же выполняет все задачи, запланированные
+			к новому времени.
 		'''
 		self.currentTime += dt
 		self.perform_until_time(self.currentTime)
