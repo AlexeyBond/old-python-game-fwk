@@ -179,3 +179,24 @@ class EventsSubscribeTest(TestCase):
 		self.eventsb.mock.reset_mock()
 		self.eventsa.trigger('boboom',4,3,2,1)
 		self.eventsb.mock.assert_called_with('base:boboom',self.eventsb,4,3,2,1)
+
+class EventsCallbackTest(TestCase):
+	def setUp(self):
+		self.mock = Mock()
+		self.events = Events()
+		self.events.on('boom',self.mock)
+		self.events.listen('boom')
+
+	def test_create_callback(self):
+		cb = self.events.event('boom',1,2,bar='foo')
+		self.assertTrue(callable(cb))
+
+	def test_call_no_args(self):
+		cb = self.events.event('boom',1,2,bar='foo')
+		cb()
+		self.mock.assert_called_with(1,2,bar='foo')
+
+	def test_call_additional_args(self):
+		cb = self.events.event('boom',1,2,bar='foo',baz='asd')
+		cb(3,4,baz='foo',qwe='rty')
+		self.mock.assert_called_with(1,2,3,4,bar='foo',baz='foo',qwe='rty')

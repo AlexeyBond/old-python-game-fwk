@@ -17,6 +17,13 @@ class Events(object):
 		def _callback(self,*args,**kwargs):
 			self.subscriber.trigger(self.sub_event,*args,**kwargs)
 
+		def isLike(self,objs,events):
+			if obj != None and (self.publisher not in objs):
+				return False
+			if event != None and (self.sub_event not in events):
+				return False
+			return True
+
 	def __init__(self):
 		self._handlers = {}
 		self._listen = []
@@ -102,6 +109,24 @@ class Events(object):
 		for cb in lst:
 			cb(*args,**kwargs)
 
+	def event(self,name,*args,**kwargs):
+		'''
+		Возвращает callable-объект, при вызове которого на данном объекте
+			произойдёт заданное собыьие с заданными параметрами.
+
+		Вызов
+		myEvents.event('boom',1,foo='bar')(2,3,bar='baz')
+
+		эквивалентен вызову
+		myEvents.trigger('boom',1,2,3,foo='bar',bar='baz')
+		'''
+		def _event(*args_i,**kwargs_i):
+			kwa = {}
+			kwa.update(kwargs)
+			kwa.update(kwargs_i)
+			return self.trigger(name,*(args+args_i),**kwa)
+		return _event
+
 	def listen(self,event,listen=True):
 		'''
 		Слушать событие. Или не слушать если listen=False
@@ -133,7 +158,6 @@ class Events(object):
 				subscribtion.enable()
 				self._subscriptions.append(subscribtion)
 
-	#TODO: Добавить отписку от отдельных событий/объектов.
 	def unsubscribe_all(self):
 		'''
 		Отписаться от всех подписок на события
@@ -141,6 +165,19 @@ class Events(object):
 		for subscription in self._subscriptions:
 			subscription.disable()
 		self._subscriptions = []
+
+	def unsubscribe(self,objects=None,events=None):
+		'''
+		Отписаться от отдельных объектов/событий
+		'''
+		#TODO: Добавить тесты.
+		selected = []
+		for subscription in self._subscriptions:
+			if subscription.isLike(objects,events):
+				selected.append(subscription)
+		for ssub in selected:
+			ssub.disable()
+			self._subscriptions.remove(ssub)
 
 	@staticmethod
 	def important(handler):
@@ -150,3 +187,43 @@ class Events(object):
 		'''
 		handler._event_pre = True
 		return handler
+
+class Shedule(object):
+	'''
+	Расписание событий. Позволяет произойти события в заданное время.
+	'''
+	#TODO: Добавить тесты.
+	def __init__(self):
+		self._tasks = []
+		self.currentTime = 0
+
+	def perform_until_time(time):
+		'''
+		Выполнить все задачи, запланированные до заданного времени.
+		'''
+		while len(self._tasks) > 0:
+			task = self._tasks[0]
+			if task[0] > time:
+				return
+			task[1]()
+			self._tasks.remove(task)
+
+	def sheduleIn(self,time,callcack):
+		'''
+		Запланировать событие на заданное время.
+		'''
+		self._tasks.append((time,callcack))
+		self._tasks.sort()
+
+	def sheduleAfter(self,timeDelta,*args,**kwargs):
+		'''
+		Запланировать событие через заданный промежуток времени после
+			текущего момента.
+		'''
+		return self.sheduleIn(self.currentTime + timeDelta,*args,**kwargs)
+
+	def update(self,dt):
+		'''
+		'''
+		self.currentTime += dt
+		self.perform_until_time(self.currentTime)
