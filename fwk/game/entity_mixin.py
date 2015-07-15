@@ -16,7 +16,8 @@ class Movement:
 	При обновлении позиция и поворот сущности будут изменяться в соответствии
 		с её скоростями.
 	'''
-	@Events.important
+	#TODO: Test it.
+	@Events.before
 	def spawn(self):
 		self._velocity_x, self._velocity_y = 0, 0
 		self._velocity_angular = 0
@@ -54,7 +55,8 @@ class Attached:
 	Привязанная сущность будет двигаться вместе с сущностью, к которой
 		она привязана.
 	'''
-	@Events.important
+	#TODO: Test it.
+	@Events.before
 	def spawn(self):
 		self._parent = None
 

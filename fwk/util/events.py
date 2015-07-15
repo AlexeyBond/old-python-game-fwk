@@ -37,7 +37,7 @@ class Events(object):
 			обработчика. И они добавляются в список обработчиков события с
 			заданным именем. Добавление происходит при помощи метода on.
 			Добавление происходит в конец списка обработчиков, если метод не
-			определён с декоратором @Events.important - в случае использования
+			определён с декоратором @Events.before - в случае использования
 			этого декоратора - обработчик добасляется в начало списка.
 		Так же все события описаные в поле events автоматически слушаются
 			объектом после его создания.
@@ -102,16 +102,16 @@ class Events(object):
 					# Связываем и устанавливаем
 					self.on(event,unbound.__get__(self),getattr(unbound,'_event_pre',False))
 
-	def on(self,event,handler,important=False):
+	def on(self,event,handler,before=False):
 		'''
 		Добавляет обработчик события.
 
 		Обработчик, добавленный позже будет выполнен позже.
-		(Если не передано неложное значение important - тогда
+		(Если не передано неложное значение before - тогда
 			обработчик окажется в начале списка.)
 		'''
 		lst = self._handlers.get(event,[])
-		if important:
+		if before:
 			lst.insert(0,handler)
 		else:
 			lst.append(handler)
@@ -226,7 +226,7 @@ class Events(object):
 			self._subscriptions.remove(ssub)
 
 	@staticmethod
-	def important(handler):
+	def before(handler):
 		'''
 		Декоратор, указывающий, что данный обработчик события должен
 			быть выполнен как можно раньше.

@@ -97,7 +97,7 @@ class MyTestMixinEvents:
 		'mixboom'
 	]
 
-	@Events.important
+	@Events.before
 	def mixboom(self,*args,**kwargs):
 		self.mock('mixin:mixboom',self,*args,**kwargs)
 
@@ -110,7 +110,7 @@ class MyTestDerivedEvents(MyTestBaseEvents,MyTestMixinEvents):
 	def boom(self,*args,**kwargs):
 		self.mock('derived:boom',self,*args,**kwargs)
 
-	@Events.important
+	@Events.before
 	def boboom(self,*args,**kwargs):
 		self.mock('derived:boboom',self,*args,**kwargs)
 
