@@ -2,14 +2,19 @@
 import math
 
 from fwk.util.events import Events
+from fwk.util.events import Shedule
 from fwk.game.entity import GameEntity
 
-class Game(Events):
+class Game(Events,Shedule):
 	'''
 	Класс игрового мира. В игровом мире живут игровые сущности.
 
+	Наследуется от класса Events - для использования событий и Shedule - для
+		выполнения событий по расписанию (по счастливому совпадению, сигнатура
+		и семантика метода update совпадает с событием update игрового мира).
+
 	Аттрибуты:
-		time		- текущее игровое время.
+		currentTime	- текущее игровое время (унаследован от Shedule).
 	События:
 		update		- происходит переодически; на это событие подписываются
 					  (напрямую или опосредованно) все или почти все сущности.
@@ -22,16 +27,50 @@ class Game(Events):
 	]
 
 	def __init__(self):
+		# Возможно, не лучший способ инициализации.
+		Events.__init__(self)
+		Shedule.__init__(self)
+
 		# Словарь, содержащий множества тэггированных сущностей.
 		self._tagged_entities = {}
+
+		# Словарь сущностей, имеющих уникальные идентификаторы.
+		self._id_entities = {}
 
 		# Словарь с батчами спрайтов, где ключом служит z-индекс спрайта.
 		self._sprite_batches = {}
 
 	def addEntity(self,entity,show=True):
+		'''
+		Добавляет сущность в игровой мир, выполняет на ней событие spawn и
+			делает её видимой если третий аргумент (show) - истина.
+		'''
 		entity.game = self
 		entity.trigger('spawn')
 		entity.show(show)
+
+	def onSetEntityId(self,entity,_id):
+		'''
+		Метод, который должен быть вызван сущностью при установке нового
+			значения поля id (до фактической его установки).
+		'''
+		prev = self._id_entities.get(_id,None)
+
+		if prev != None and prev != entity:
+			prev.id = None
+
+		if entity.id != None:
+			self._id_entities[entity.id] = None
+			del self._id_entities[entity.id]
+
+		if _id != None:
+			self._id_entities[_id] = entity
+
+	def getEntityById(self,_id):
+		'''
+		Метод, позволяющий получить сущность по её уникальному идентификатору.
+		'''
+		return self._id_entities.get(_id,None)
 
 	def setEntityTags(self,entity,*tags):
 		'''
@@ -56,6 +95,12 @@ class Game(Events):
 		'''
 		for eset in self._tagged_entities.values():
 			eset.discard(entity)
+
+	def getEntitiesByTag(self,tag):
+		'''
+		Возвращает список сущностей отмеченных заданным тегом.
+		'''
+		return list(self._tagged_entities.get(tag,()))
 
 	def loadEntities(self,worldDesc):
 		'''

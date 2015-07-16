@@ -1,7 +1,7 @@
 # coding=UTF-8
 import math
 
-from fwk.util.events import Events
+from fwk.util.all import *
 
 import fwk.game.entity_mixin as _entity_mixins
 
@@ -29,6 +29,30 @@ class GameEntity(Events):
 					  (обработчик: on_hide).
 		show		- происходит когда сущность становится видимой
 					  (обработчик on_show).
+		configured	- происходит после конфигурирования сущности методом
+					  configure (обработчик события - on_configured).
+
+	Лучше бы в классах - наследниках сущностей не был определён конструктор.
+		Вместо него можно использовать методы-обработчики событий spawn и
+		configured.
+
+	Определение класса сущности может выглядеть так:
+
+	@GameEntity.defineClass('my-super-entity')
+	class MyEntity(GameEntity):
+		def spawn(self):
+			# init some fields ...
+
+		def update(self,dt):
+			# do some work ...
+
+	Тогда описание сущности в файле уровня (JSON) может выглядеть так:
+
+	{
+		_class: "my-super-entity",
+		position: [3.14, 100500],
+		_comment: "Очень важная сущность !!!"
+	}
 	'''
 	def __init__(self):
 		Events.__init__(self)
@@ -46,10 +70,11 @@ class GameEntity(Events):
 
 		self.game = None
 		self.sprite = None
-		self.id = None
+		self._id = None
 
 	events = [
 		'spawn',
+		('configured','on_configured'),
 		'update',
 		'destroy',
 		('hide','on_hide'),
@@ -60,8 +85,28 @@ class GameEntity(Events):
 		'''
 		Метод, вычисляющий вектор направления по повороту сущности.
 		'''
-		#TODO: Разобраться с системами координат/единицами измерения углов и т.д.
-		return math.sin(self.rotation),math.cos(self.rotation)
+		return directionFromAngle(self.rotation)
+
+	@property
+	def id(self):
+		'''
+		Уникальный идентификатор сущности. Каждая сущность может иметь
+			идентификатор (а может и не иметь). Если сущность имеет
+			идентификатор, то только один.
+
+		Идентификатор может быть присвоен сущности после её добавления в
+			игровой мир (в обработчиках событий spawn, configured или других 
+			обытий игрового процесса, а так же через конфигурацию).
+
+		Присвоение значения None идентификатору сущности означает лишение
+			сущности идентификатора.
+		'''
+		return self._id
+
+	@id.setter
+	def id(self,val):
+		self.game.onSetEntityId(self,val)
+		self._id = val
 
 	@property
 	def visible(self):
@@ -155,9 +200,12 @@ class GameEntity(Events):
 		Игнорирует ключи, начинающиеся с '_'.
 		'''
 		for key,value in config.items():
-			if not key.startswith('_')
+			if not key.startswith('_'):
 				setattr(self,key,value)
 
+		self.trigger('configured')
+
+	# Словарь всех классов сущностей. Ключ - короткое обозначение класса.
 	_classDefs = {}
 
 	@staticmethod
