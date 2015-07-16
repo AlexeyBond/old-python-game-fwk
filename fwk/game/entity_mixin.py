@@ -4,6 +4,7 @@
 '''
 
 from fwk.util.events import Events
+from fwk.game.camera import CameraController
 
 class Movement:
 	'''
@@ -78,3 +79,30 @@ class Attached:
 		for prop in self._attach_props:
 			value = getattr(self._parent,prop)
 			setattr(self,prop,value)
+
+class CameraTarget(CameraController):
+	'''
+	Примесь, делающая сущность объектом, управляющим камерой, а именно -
+		передающим камере некоторые из своих свойств.
+
+	Аттрибуты:
+		cameraInitials	- словарь значений свойств камеры, устанавливаемых при
+							её подключении.
+		cameraAttachMap	- словарь, определяющий связь свойств камеры и
+							сущности: ключи - имена свойств камеры, а значения
+							- имена свойств сущности.
+	'''
+	#TODO: Test it.
+	@Events.before
+	def spawn(self):
+		self.cameraAttachMap = {'focus':'position','rotation':'rotation'}
+		self.cameraInitials = {'scale':1.0,'scale_x':1.0,'scale_y':1.0}
+
+	def initCamera(self,camera):
+		for prop, val in self.cameraInitials.items():
+			setattr(camera,prop,val)
+		self.updateCamera(camera)
+
+	def updateCamera(self,camera):
+		for cam_prop, my_prop in self.cameraAttachMap.items():
+			setattr(camera,cam_prop,getattr(self,my_prop))
