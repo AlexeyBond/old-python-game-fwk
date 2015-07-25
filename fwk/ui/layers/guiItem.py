@@ -1,92 +1,110 @@
 # coding=UTF-8
+from copy import copy
+
 from fwk.ui.layer import Layer
-from fwk.util import *
+from fwk.util.all import *
 
-### Слой, рисующий элемент гуя.
 class GUIItemLayer(Layer):
-	# offset_* - отступ элемента по оси.
-	#  Если 0 - элемент распологается по центру.
-	#  Если < 0 - отступ от края с большей координатой.
-	def __init__(self,offset_x,offset_y,width,height,pad_x=0,pad_y=0):
-		Layer.__init__(self)
+	'''
+	Слой - элемент графического интерфейса пользователя.
+	'''
 
-		self.offset_x = offset_x
-		self.offset_y = offset_y
+	events = [
+		('ui:hover-start','on_hover_start'),
+		('ui:hover-end','on_hover_end'),
+		('ui:focus-start','on_focus_start'),
+		('ui:focus-end','on_focus_end'),
+		('ui:click','on_click')
+	]
 
-		self.pad_x = pad_x
-		self.pad_y = pad_y
+	def init(self,layout):
+		self._layout = layout
 
-		self.mouse_in = False
+		self.hover = False
+		self.focus = False
 
-		# Прямоугольник (x,y,ширина,высота)
-		self.rect = [0,0,width,height]
+	def on_add_to_screen(self,screen):
+		self._updateLayout(**(self._layout))
 
-		self.update_rect( )
+	@staticmethod
+	def _updateLayoutDim(vpSize,elMin,elMax,elSize):
+		elMax = vpSize - elMax if elMax != None else None
+		if (elMax == None) and (elMin == None):
+			hvsz = vpSize / 2
+			hesz = elSize / 2
+			elMin = hvsz - hesz
+			elMax = hvsz + hesz
+		return elMin, elMax, elSize
 
-	# Проверяет, находится ли точка в прямоугольнике элемента
-	def pointInRect(self,x,y):
-		return (x >= self.rect[0]) and (
-				x <= (self.rect[2]+self.rect[0])) and (
-				y >= self.rect[1]) and (
-				y <= (self.rect[3]+self.rect[1]))
-	#
+	def _updateLayout(self,top=None,bottom=None,left=None,right=None,width=None,height=None,offset_x=0,offset_y=0):
+		left, right, width = GUIItemLayer._updateLayoutDim(self.width,left,right,width)
+		bottom, top, height = GUIItemLayer._updateLayoutDim(self.height,bottom,top,height)
+
+		self._gui_item_rect = Rect(top=top,bottom=bottom,left=left,right=right,width=width,height=height)
+		self._gui_item_rect.move(offset_x, offset_y)
+
+	@property
+	def layout(self):
+		'''
+		Свойство, возвращающее текущее расположение элемента (на самом деле -
+			копию его), и позволяющее установит новое.
+
+		Расположение (layout) элемента представляет из себя словарь со
+			следующими полями:
+			<top,bottom,left,right>
+					- координаты краёв элемента относительно соответствующих
+						краёв родительского элемента (экрана). Если обе
+						координаты отсутствуют или равны None, то элемент
+						распологается по центру.
+			<height,width>
+					- высота и ширина элемента. Используются если координат
+						недостаточно.
+			<offset_x,offset_y>
+					- отступы элемента по осям x и y.
+		'''
+		return copy(self._layout)
+
+	@layout.setter
+	def layout(self,layout):
+		self._updateLayout(**layout)
+		self._layout = layout
+
+	def on_viewport_resize(self,*a):
+		self._updateLayout(**(self._layout))
+
+	def _updateHoverStatus(self,curX,curY):
+		hoverStatusNew = self._gui_item_rect.hasPoint(curX,curY)
+		if hoverStatusNew != self.hover:
+			self.hover = hoverStatusNew
+			return self.trigger('ui:hover-start' if hoverStatusNew else 'ui:hover-end')
+
+	def on_mouse_enter(self,x,y):
+		return self._updateHoverStatus(x,y)
+
+	def on_mouse_leave(self,x,y):
+		self.hover = False
+		self.focus = False
+
+	def on_mouse_move(self,x,y,dx,dy):
+		return self._updateHoverStatus(x,y)
+
+	def on_mouse_press(self,x,y,button,mod):
+		if self._gui_item_rect.hasPoint(x,y):
+			self.focus = True
+			return self.trigger('ui:focus-start')
+
+	def on_mouse_release(self,x,y,button,mod):
+		if self.focus:
+			self.focus = False
+			self.trigger('ui:focus-end')
+			if self._gui_item_rect.hasPoint(x,y):
+				self.trigger('ui:click',x,y)
+		return self._updateHoverStatus(x,y)
+
 	def draw(self):
-		if GAME_CONSOLE.visible:
-			glBegin(GL_LINE_LOOP)
-			glVertex2i(self.rect[0],self.rect[1])
-			glVertex2i(self.rect[0]+self.rect[2],self.rect[1])
-			glVertex2i(self.rect[0]+self.rect[2],self.rect[1]+self.rect[3])
-			glVertex2i(self.rect[0],self.rect[1]+self.rect[3])
-			glEnd( )
-
-	#
-	def on_resize(self,width,height):
-		if self.offset_x == 0:
-			self.rect[0] = width // 2 - self.rect[2] // 2
-		elif self.offset_x < 0:
-			self.rect[0] = width + self.offset_x - self.rect[2]
-		else:
-			self.rect[0] = self.offset_x
-
-		if self.offset_y == 0:
-			self.rect[1] = height // 2 - self.rect[3] // 2
-		elif self.offset_y < 0:
-			self.rect[1] = height + self.offset_y - self.rect[3]
-		else:
-			self.rect[1] = self.offset_y
-
-		self.rect[0] += self.pad_x
-		self.rect[1] += self.pad_y
-
-	#
-	def update_rect(self):
-		GUIItemLayer.on_resize(self,self.width,self.height)
-
-	#
-	def move(self,offset_x,offset_y):
-		self.offset_x = offset_x
-		self.offset_y = offset_y
-		self.update_rect( )
-
-	#
-	def setSize(self,width,height):
-		self.rect[2] = width
-		self.rect[3] = height
-		self.update_rect( )
-
-	#
-	def on_mouse_motion(self,x,y,dx,dy):
-		ni = self.pointInRect(x,y)
-
-		if self.mouse_in and (not ni):
-			self.on_element_mouse_leave( )
-			self.mouse_in = False
-		elif (not self.mouse_in) and ni:
-			self.on_element_mouse_enter( )
-			self.mouse_in = True
-
-	def on_element_mouse_leave(self):
-		GAME_CONSOLE.write('Mouse leave!')
-
-	def on_element_mouse_enter(self):
-		GAME_CONSOLE.write('Mouse enter!')
+		color = Color(255,255,255)
+		if self.focus:
+			color.rgb = (255,0,0)
+		elif self.hover:
+			color.rgb = (0,255,0)
+		DrawWireframeRect(self._gui_item_rect,color)
