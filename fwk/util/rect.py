@@ -118,6 +118,17 @@ class Rect(object):
 
 		return self
 
+	def move(self,dx,dy):
+		'''
+		Перемещает прямоугольник относительно текущего положения.
+		'''
+		self.left += dx
+		self.right += dx
+		self.top += dy
+		self.bottom += dy
+
+		return self
+
 	def clone(self):
 		'''
 		Создаёт копию прямоугольника.
@@ -163,6 +174,20 @@ class Rect(object):
 			y = x
 
 		return self.inset(-x,-y)
+
+	def hasPoint(self,x,y=None):
+		'''
+		Определяет, принадлежит ли точка прямоугольнику.
+
+		Точка, лежащая на границе прямоугольника, считается принадлежащей ему.
+		'''
+		if y == None:
+			x, y = x
+
+		return	(x >= self.left) and \
+				(x <= self.right) and \
+				(y >= self.bottom) and \
+				(y <= self.top)
 
 	def __eq__(self,other):
 		try:
