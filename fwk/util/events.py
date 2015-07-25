@@ -1,4 +1,5 @@
 # coding=UTF-8
+import inspect
 
 class Events(object):
 	'''
@@ -64,11 +65,14 @@ class Events(object):
 			self.subscriber.trigger(self.sub_event,*args,**kwargs)
 
 		def isLike(self,objs,events):
-			if obj != None and (self.publisher not in objs):
+			if objs != None and (self.publisher not in objs):
 				return False
-			if event != None and (self.sub_event not in events):
+			if events != None and (self.sub_event not in events):
 				return False
 			return True
+
+		def __repr__(self):
+			return '<subscription to event "{pub_event}" of {publisher} as "{sub_event}">'.format(**(self.__dict__))
 
 	def __init__(self):
 		self._handlers = {}
@@ -82,7 +86,7 @@ class Events(object):
 		Приватный метод, внутри которого происходит МАГИЯ!
 		'''
 		events = []
-		classes = ((self.__class__,) + self.__class__.__bases__)[::-1]
+		classes = inspect.getmro(self.__class__)[::-1]
 
 		# Собираем списки событий по всей иерархии.
 		for cls in classes:
@@ -117,6 +121,8 @@ class Events(object):
 			lst.append(handler)
 		self._handlers[event] = lst
 
+		return self
+
 	def off(self,event=None,callback=None):
 		'''
 		Убирает обработчик события/убирает все обработчики события/убирает
@@ -129,7 +135,7 @@ class Events(object):
 		# Just an optimisation
 		if event == None and callback == None:
 			self._handlers = {}
-			return
+			return self
 
 		if event == None:
 			for event in self._handlers.keys():
@@ -137,10 +143,12 @@ class Events(object):
 
 		if callback == None:
 			self._handlers[event] = []
-			return
+			return self
 
 		if callback in self._handlers.get(event,[]):
 			self._handlers[event].remove(callback)
+
+		return self
 
 	def trigger(self,event,*args,**kwargs):
 		'''
@@ -150,10 +158,12 @@ class Events(object):
 		Sorry for my bad russian.
 		'''
 		if event not in self._listen:
-			return
+			return self
 		lst = self._handlers.get(event,())
 		for cb in lst:
 			cb(*args,**kwargs)
+
+		return self
 
 	def event(self,name,*args,**kwargs):
 		'''
@@ -180,6 +190,8 @@ class Events(object):
 		if (event in self._listen) != listen:
 			getattr(self._listen,'append' if listen else 'remove')(event)
 
+		return self
+
 	def ignore(self,event,ignore=True):
 		'''
 		То же, что и listen, только наоборот.
@@ -204,6 +216,8 @@ class Events(object):
 				subscribtion.enable()
 				self._subscriptions.append(subscribtion)
 
+		return self
+
 	def unsubscribe_all(self):
 		'''
 		Отписаться от всех подписок на события
@@ -211,6 +225,8 @@ class Events(object):
 		for subscription in self._subscriptions:
 			subscription.disable()
 		self._subscriptions = []
+
+		return self
 
 	def unsubscribe(self,objects=None,events=None):
 		'''
@@ -224,6 +240,8 @@ class Events(object):
 		for ssub in selected:
 			ssub.disable()
 			self._subscriptions.remove(ssub)
+
+		return self
 
 	@staticmethod
 	def before(handler):
@@ -279,6 +297,8 @@ class Shedule(object):
 		'''
 		self._tasks.append(Shedule.Task(time,callcack,args,kwargs))
 		self._tasks.sort()
+
+		return self
 
 	def sheduleAfter(self,timeDelta,*args,**kwargs):
 		'''
