@@ -2,8 +2,9 @@
 import pyglet
 from pyglet.gl import *
 
-from fwk.ui.screen import AppScreen
+from fwk.ui.screen import Screen
 from console import GAME_CONSOLE as Console
+from fwk.util.all import *
 
 class MainWindow(pyglet.window.Window):
 	'''
@@ -21,7 +22,7 @@ class MainWindow(pyglet.window.Window):
 		Console.write('-- Starting --')
 
 		self.cur_screen = None
-		self.change_screen(AppScreen.new('STARTUP'))
+		self.change_screen(Screen.new('STARTUP'))
 
 	def init_opengl(self):
 		'''
@@ -51,14 +52,26 @@ class MainWindow(pyglet.window.Window):
 		self.cur_screen = screen
 		self.cur_screen.resize(self.width,self.height)
 
+	_EVENTS_PYGLET_TO_DRAWABLE_MAP = {
+		'on_key_press'		: 'in:key:press',
+		'on_key_release'	: 'in:key:release',
+		'on_mouse_drag'		: 'in:mouse:drag',
+		'on_mouse_enter'	: 'in:mouse:enter',
+		'on_mouse_leave'	: 'in:mouse:leave',
+		'on_mouse_motion'	: 'in:mouse:move',
+		'on_mouse_press'	: 'in:mouse:press',
+		'on_mouse_release'	: 'in:mouse:release',
+		'on_mouse_scroll'	: 'in:mouse:scroll'
+	}
+
 	def dispatch_event(self, event_type, *args):
 		'''
 		Диспечер событий.
 		'''
-		if event_type in ('on_key_press','on_key_release','on_mouse_drag','on_mouse_enter','on_mouse_leave','on_mouse_motion','on_mouse_press','on_mouse_release','on_mouse_scroll'):
-			self.cur_screen.dispatch_event(event_type,*args)
-			#TODO: Сделать обработку screen.next и screen.need_exit без привязки к событиям.
-			if self.cur_screen.need_exit:
+		if event_type in MainWindow._EVENTS_PYGLET_TO_DRAWABLE_MAP:
+			self.cur_screen.trigger(MainWindow._EVENTS_PYGLET_TO_DRAWABLE_MAP[event_type],*args)
+			#TODO: Сделать обработку screen.next и screen.exit_required без привязки к событиям.
+			if self.cur_screen.exit_required:
 				self.close( )
 			elif self.cur_screen.next != None:
 				self.change_screen(self.cur_screen.next)
