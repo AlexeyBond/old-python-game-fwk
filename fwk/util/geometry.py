@@ -1,3 +1,4 @@
+# coding=UTF-8
 import math
 
 '''
@@ -29,3 +30,11 @@ def perpendicularDirection(direction):
 	Вычисление вектора направления, перпендикулярного заданному.
 	'''
 	return direction[1], -direction[0]
+
+def rotateVector(vector,angle):
+	'''
+	Поворачивает вектор на заданный угол.
+	'''
+	r1 = directionFromAngle(angle)
+	r0 = perpendicularDirection(r0)
+	return vector[0] * r0[0] + vector[1] * r1[0],vector[0] * r0[1] + vector[1] * r1[1]
