@@ -20,7 +20,7 @@ class StaticBackgroundLauer(Layer):
 				'fill' - на весь экран с соблюдением пропорций
 					и полным заполнением пространства
 		'''
-		self._mode = mode
+		self.mode = mode
 		self.texture = LoadTexture(imgpath)
 
 	def on_add_to_screen(self,screen):
@@ -63,3 +63,4 @@ class StaticBackgroundLauer(Layer):
 	def mode(self,mode):
 		if ('_recalc__'+mode) not in dir(self):
 			raise 'Programming error: unsupported background mode: {mode}'.format(**locals())
+		self._mode = mode
