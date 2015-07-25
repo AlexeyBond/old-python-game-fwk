@@ -7,7 +7,7 @@ class StaticBackgroundLauer(Layer):
 	Слой статического заднего фона.
 	'''
 
-	def __init__(self,imgpath,mode='fit'):
+	def init(self,imgpath,mode='fit'):
 		'''
 		Конструктор.
 
@@ -20,77 +20,46 @@ class StaticBackgroundLauer(Layer):
 				'fill' - на весь экран с соблюдением пропорций
 					и полным заполнением пространства
 		'''
-		Layer.__init__(self)
-		self.mode = mode
+		self._mode = mode
 		self.texture = LoadTexture(imgpath)
-		self.recalc( )
-		self.tx = 0
-		self.ty = 0
-		self.tw = self.width
-		self.th = self.height
 
-	def recalc(self):
+	def on_add_to_screen(self,screen):
+		return self._recalc( )
+
+	def _recalc__fit(self):
+		return Rect(bottom=0,left=0,width=self.width,height=self.height)
+
+	def _recalc__center(self):
+		return self._recalc__fit().resize(width=self.texture.width,height=self.texture.height,origin='center-center')
+
+	def _recalc__scale(self):
+		return self._recalc__center() \
+			.scale(min(float(self.width) / self.texture.width, float(self.height) / self.texture.height),origin='center-center')
+
+	def _recalc__fill(self):
+		return self._recalc__center() \
+			.scale(max(float(self.width) / self.texture.width, float(self.height) / self.texture.height),origin='center-center')
+
+	def _recalc(self):
 		'''
 		Метод, вычисляющий параметры наложения текстуры - коорддинаты и размер.
-
-		Прочтение вслух исходного кода данного метода способно вызвать самого сатану.
 		'''
-		#TODO: Использовать паттерн "Стратегия" для пущщей абстрактности и читабельности (и чтобы не беспокоить дьявола).
-		if self.mode == 'fit':
-			self.tx = 0
-			self.ty = 0
-			self.tw = self.width
-			self.th = self.height
-			return
-		cx = self.width // 2
-		cy = self.height // 2
-		hw = self.texture.width // 2
-		hh = self.texture.height // 2
-		if self.mode == 'center':
-			self.tx = cx - hw
-			self.ty = cy - hw
-			self.tw = self.texture.width
-			self.th = self.texture.height
-		elif (self.mode == 'scale') or (self.mode == 'fill'):
-			fill = (self.mode == 'fill')
-			tw = float(self.texture.width)
-			th = float(self.texture.height)
-			sw = float(self.width)
-			sh = float(self.height)
-			if sh == 0 or sw == 0:
-				return
-			tr = tw / th
-			sr = sw / sh
-			if tr == sr:
-				self.tx = 0
-				self.ty = 0
-				self.tw = self.width
-				self.th = self.height
-			elif (tr > sr) != fill:
-				self.tx = 0
-				self.tw = self.width
-				hh = hh * (sw / tw)
-				self.ty = int(cy - hh)
-				self.th = int(hh * 2)
-			elif (tr < sr) != fill:
-				self.ty = 0
-				self.th = self.height
-				hw = hw * (sh / th)
-				self.tx = int(cx - hw)
-				self.tw = int(hw * 2)
+		self.texture_rect = getattr(self,'_recalc__'+self._mode)()
 
-	def on_resize(self,width,height):
-		'''
-		Метод, вызываемый при изменении размера.
-
-		Вызывает метод recalc.
-		'''
-		self.width = width
-		self.height = height
-		self.recalc( )
+	def on_viewport_resize(self,*args):
+		return self._recalc( )
 
 	def draw(self):
 		'''
 		Метод отрисовки.
 		'''
-		self.texture.blit(x=self.tx,y=self.ty,width=self.tw,height=self.th)
+		BlitTextureToRect(self.texture,self.texture_rect)
+
+	@property
+	def mode(self):
+		return self._mode
+
+	@mode.setter
+	def mode(self,mode):
+		if ('_recalc__'+mode) not in dir(self):
+			raise 'Programming error: unsupported background mode: {mode}'.format(**locals())
