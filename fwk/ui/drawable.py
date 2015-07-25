@@ -1,42 +1,72 @@
 # coding=UTF-8
+from fwk.util.all import *
 
-class Drawable:
+class AbstractDrawable(Events):
 	'''
-	Абстрактный класс для экранов и слоёв.
+	Интерфейс для чего-то, что можно нарисовать в окне.
 
-	Имеет размеры (width, height), метод их изменения (resize),
-	и метод отрисовки.
+	События:
+		vp:resize(on_resize)
+			- Происходит после изменения размера.
+				Параметры - oldWidth, oldHeight - старые ширина и высота.
+		show(on_show)
+		hide(on_hide)
+			- Происходят при скрытии/показывании.
+		init- Происходит при создании объекта
+				Аргументы - аргументы, с которыми был вызван конструктор.
+		destroy
+			- Происходит при уничтожении объекта
+
+	События ввода:
+		in:key:press(on_key_press)
+		in:key:release(on_key_release)
+		in:mouse:enter(on_mouse_enter)
+		in:mouse:leave(on_mouse_leave)
+		in:mouse:press(on_mouse_press)
+		in:mouse:release(on_mouse_release)
+		in:mouse:drag(on_mouse_drag)
+		in:mouse:move(on_mouse_move)
+		in:mouse:scroll(on_mouse_scroll)
 	'''
-	def __init__(self):
-		self.height = 0
-		self.width = 0
 
-	def resize(self,width,height):
-		'''
-		Метод, изменяющий размеры.
+	events = [
+		'init',
+		('destroy','on_destroy'),
+		('vp:resize','on_viewport_resize'),
+		('show','on_show'),
+		('hide','on_hide'),
+		('in:key:press','on_key_press'),
+		('in:key:release','on_key_release'),
+		('in:mouse:enter','on_mouse_enter'),
+		('in:mouse:leave','on_mouse_leave'),
+		('in:mouse:press','on_mouse_press'),
+		('in:mouse:release','on_mouse_release'),
+		('in:mouse:drag','on_mouse_drag'),
+		('in:mouse:move','on_mouse_move'),
+		('in:mouse:scroll','on_mouse_scroll')
+	]
 
-		Если размеры действительно изменяются, то вызывает on_resize
-		с новыми значениями размеров в качестве параметров
-		(фактические размеры изменяются после вызова on_resize)
+	def __init__(self,*args,**kwargs):
+		Events.__init__(self)
+
+		self._visible = False
+
+		self.trigger('init',*args,**kwargs)
+
+	def show(self,show=True):
 		'''
-		if self.width != width or self.height != height:
-			self.on_resize(width,height)
-			self.width = width
-			self.height = height
+		'''
+		if show != self._visible:
+			self._visible = show
+			self.trigger('show' if show else 'hide')
+		return self
+
+	def hide(self,hide=True):
+		'''
+		'''
+		return self.show(not hide)
 
 	def draw(self):
 		'''
-		Метод отрисовки.
-
-		Не принимает параметров.
-		'''
-		pass
-
-	def on_resize(self,width,height):
-		'''
-		Метод, вызываемый при фактическом изменении размеров.
-
-		Новые размеры передаются как параметры. Старые размеры
-		хранятся полях объекта.
 		'''
 		pass

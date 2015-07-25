@@ -1,112 +1,90 @@
 # coding=UTF-8
-from drawable import Drawable
+from fwk.ui.drawable import AbstractDrawable
 
-class AppScreen(Drawable):
+class Screen(AbstractDrawable):
 	'''
-	Абстрактный класс экрана.
+	Экран.
 
-	Аттрибуты:
-		layers - список слоёв, из которых состоит экран
-		next - экран, к которому необходимо перейти при первой же возможности
-		need_exit - необходимо ли завершить работу приложения.
-		keep_prevous - необходимо ли хранить ссылку на предидущий экран
-		prevous - ссылка на предидущий экран либо None
+	Экран опреденяет, поведение приложения - что рисовать в окне, как
+		реагировать на события ввода.
 	'''
 
-	SCREEN_CLASSES = {}
-
-	@staticmethod
-	def new(classname,*args,**kwargs):
-		'''
-		Статический метод, создающий новый экран по короткому обозначению класса.
-		'''
-		if classname in AppScreen.SCREEN_CLASSES:
-			return AppScreen.SCREEN_CLASSES[classname](*args,**kwargs)
-		else:
-			return None
-
-	def __init__(self):
-		Drawable.__init__(self)
+	def init(self,*args,**kwargs):
+		self.width = 1
+		self.height = 1
 
 		self.layers = []
+
+		self._prevous = None
 		self.next = None
-		self.need_exit = False
 		self.keep_prevous = False
-		self.prevous = None
+		self.exit_required = False
+
+	def draw(self):
+		for layer in self.layers:
+			if layer._visible:
+				layer.draw()
+
+	def resize(self,width,height):
+		'''
+		Метод вызывается окном при изменении размера. Лучше бы его не
+			перегружать, а использовать событие vp:resize.
+
+		О размерах вообще:
+		Из всех Drawable о размере окна знает только экран (поля width и
+			height). Получение этих свойств у слоя происходит через обращение
+			к экрану. Попытка присвоить width или height у слоя может привести
+			к непредсказуемым последствиям.
+		'''
+		oldWidth, oldHeight = self.width, self.height
+		self.width, self.height = width, height
+		self.trigger('vp:resize',oldWidth,oldHeight)
+
+	def pushLayerFront(self,layer,show=True):
+		'''
+		Добавляет слой к экрану спереди.
+
+		Порядок обработки событий слоями определяется порядком их добавления.
+		'''
+		# Спереди - то, что рисуерся последним и добавляется, соответственно, в
+		# 	зад списка. Логика.
+		self.layers.append(layer)
+		layer.trigger('layer:add-to-screen',self)
+		layer.show(show)
+		return self
+
+	def pushLayerBack(self,layer,show=True):
+		'''
+		Добавляет слой к экрану сзади.
+
+		Порядок обработки событий слоями определяется порядком их добавления.
+		'''
+		self.layers.insert(0,layer)
+		layer.trigger('layer:add-to-screen',self)
+		layer.show(show)
+		return self
+
+	def requireExit(self):
+		'''
+		Вызывается экраном, когда он считает, что пора закрыть окно приложения.
+		'''
+		self.exit_required = True
 
 	def activate(self,prevous):
 		'''
-		Метод, активирующий экран.
+		Метод, вызываемый окном при переключении с экрана prevous на этот.
 		'''
-		if prevous != None and not self.keep_prevous:
-			prevous.exit( )
-			prevous.next = None
-		else:
-			if self.prevous != None:
-				self.prevous.exit( )
-			self.prevous = prevous
+		self._prevous = None
 
-	def on_activate(self):
-		'''
-		Метод, вызываемый когда экран становится активным.
-		'''
-		pass
+		if prevous != None:
+			prevous.hide()
+			if self.keep_prevous:
+				self._prevous = prevous
+				prevous.next = None
+			else:
+				prevous.trigger('destroy')
 
-	def set_next(self,classname,*args,**kwargs):
-		'''
-		Метод, создающий новый экран, который затем станет активным
-		'''
-		self.next = AppScreen.new(classname,*args,**kwargs)
-
-	def go_back(self):
-		'''
-		Вернуться к предидущему экрану, если ссылка сохранена
-		'''
-		if self.prevous != None:
-			self.next = self.prevous
-
-	def dispatch_event(self,event_type,*args):
-		'''
-		Диспечер событий.
-		'''
-		if event_type in dir(self):
-			getattr(self,event_type)(*args)
-		for layer in self.layers:
-			if event_type in dir(layer):
-				getattr(layer,event_type)(*args)
-
-	def draw(self):
-		'''
-		Метод отрисовки.
-		'''
-		for layer in self.layers:
-			if layer.visible:
-				layer.draw( )
-
-	def on_resize(self,width,height):
-		'''
-		Метод, вызываемый при изменении размера.
-		Изменяет размеры слоёв.
-		'''
-		for layer in self.layers:
-			layer.resize(width,height)
-
-	def addLayer(self,layer):
-		'''
-		Метод, добавляющий слой к экрану.
-		Вызывает on_add_to_screen у слоя.
-		'''
-		self.layers.append(layer)
-		layer.screen = self
-		layer.on_add_to_screen()
-		layer.resize(self.width,self.height)
-
-	def exit(self):
-		'''
-		Метод, вызываемый при уничтожении экрана.
-		'''
-		if self.prevous != None:
-			self.prevous.exit( )
+	_SCREEN_CLASSES = {}
 
 	@staticmethod
 	def ScreenClass(cname):
@@ -115,11 +93,18 @@ class AppScreen(Drawable):
 
 		Пример использования:
 
-		AppScreen.ScreenClass('MySuperScreen')
-		class MySuperScreen(AppScreen):
+		Screen.ScreenClass('MySuperScreen')
+		class MySuperScreen(Screen):
 			...
 		'''
 		def ScreenClassDecorator(sclass):
-			AppScreen.SCREEN_CLASSES[cname] = sclass
+			Screen._SCREEN_CLASSES[cname] = sclass
 			return sclass
 		return ScreenClassDecorator
+
+	@staticmethod
+	def new(clazz,*args,**kwargs):
+		'''
+		Статический метод для создания нового экрана.
+		'''
+		return Screen._SCREEN_CLASSES[clazz](*args,**kwargs)
