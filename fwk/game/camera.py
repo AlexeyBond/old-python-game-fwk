@@ -1,6 +1,8 @@
 # coding=UTF-8
 from pyglet import gl
 
+from fwk.util.geometry import *
+
 class Camera(object):
 	'''
 	Камера. Опрелеляет, как и какую часть игрового мира видит игрок.
@@ -68,7 +70,7 @@ class Camera(object):
 		# 2 - масштабирование относительно (0,0)
 		gl.glScalef(self.scale_x * self.scale,self.scale_y * self.scale,1)
 
-		# 1 - переместить (focus_x,focus_y) в (0,0)
+		# 1 - переместить focus в (0,0)
 		gl.glTranslatef(-self._focus_x,-self._focus_y,0)
 
 	def setController(self,controller):
@@ -91,14 +93,34 @@ class Camera(object):
 		По экранным координатам определяет координаты соответствующей им точки
 			в игровом мире.
 		'''
-		pass #TODO: Do
+		x, y = screenPoint
+
+		x, y = x - (self.width / 2), y - (self.height / 2)
+
+		x, y = rotateVector((x,y),self.rotation)
+
+		x, y = x * self.scale_x * self.scale, y * self.scale_y * self.scale
+
+		x, y = x + self._focus_x, y + self._focus_y
+		
+		return x, y # TODO: Наверняка, где-нибудь здесь есть ошибка.
 
 	def project(self,gamePoint):
 		'''
 		По координатам точки в игровом мире определяет координаты
 			соответствующей им точки на экране.
 		'''
-		pass #TODO: Do
+		x, y = gamePoint
+
+		x, y = x - self._focus_x, y - self._focus_y
+
+		x, y = x * self.scale_x * self.scale, y * self.scale_y * self.scale
+
+		x, y = rotateVector((x,y),-self.rotation)
+
+		x, y = x + (self.width / 2), y + (self.height / 2)
+		
+		return x, y # TODO: Наверняка, где-нибудь здесь есть ошибка.
 
 class CameraController(object):
 	'''
