@@ -41,6 +41,9 @@ class Game(Events,Shedule):
 		# Словарь с батчами спрайтов, где ключом служит z-индекс спрайта.
 		self._sprite_batches = {}
 
+		# Множество сущностей, трансформация которых была изменена с прошлой отрисовки.
+		self._transform_changed_entities = set()
+
 	def addEntity(self,entity,show=True):
 		'''
 		Добавляет сущность в игровой мир, выполняет на ней событие spawn и
@@ -103,6 +106,14 @@ class Game(Events,Shedule):
 		'''
 		return list(self._tagged_entities.get(tag,()))
 
+	def invalidateEntityTransform(self,entity):
+		'''
+		Добавляет сущность в список сущностей, трансформация которых была
+			изменена. Перед отрисовкой трансформация будет передана спрайтам
+			сущностей, а затем список будет очищен.
+		'''
+		self._transform_changed_entities.add(entity)
+
 	def loadEntities(self,worldDesc):
 		'''
 		Создаёт сущности по описанию игрового мира.
@@ -146,5 +157,12 @@ class Game(Events,Shedule):
 		'''
 		Выполняет отрисовку батчей спрайтов.
 		'''
+		# Обновить трансформацию сущностей
+		for entity in self._transform_changed_entities:
+			entity.trigger('after-transform-changed')
+
+		self._transform_changed_entities.clear()
+
+		# Собстнна нарисовать спрайты.
 		for zindex in sorted(self._sprite_batches.keys()):
 			self._sprite_batches[zindex].draw()

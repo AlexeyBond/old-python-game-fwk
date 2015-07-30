@@ -31,6 +31,9 @@ class GameEntity(Events):
 					  (обработчик on_show).
 		configured	- происходит после конфигурирования сущности методом
 					  configure (обработчик события - on_configured).
+		after-transform-changed
+					- происходит перед первой отрисовкой после каждого
+					  изменения трансформации.
 
 	Лучше бы в классах - наследниках сущностей не был определён конструктор.
 		Вместо него можно использовать методы-обработчики событий spawn и
@@ -75,6 +78,7 @@ class GameEntity(Events):
 	events = [
 		'spawn',
 		('configured','on_configured'),
+		('after-transform-changed','after_transform_changed'),
 		'update',
 		'destroy',
 		('hide','on_hide'),
@@ -120,6 +124,14 @@ class GameEntity(Events):
 		if visible != self.visible:
 			self.show(visible)
 
+	def _invalidateTransform(self):
+		if self.game != None:
+			self.game.invalidateEntityTransform(self)
+		self._transform_changed = True
+
+	def after_transform_changed(self):
+		self._transform_changed = False
+
 	@property
 	def position(self):
 		'''
@@ -132,7 +144,7 @@ class GameEntity(Events):
 		if (self._x, self._y) == val:
 			return
 		self._x, self._y = val
-		self._transform_changed = True
+		self._invalidateTransform()
 
 	@property
 	def rotation(self):
@@ -144,7 +156,7 @@ class GameEntity(Events):
 	@rotation.setter
 	def rotation(self,val):
 		self._rotation = val
-		self._transform_changed = True
+		self._invalidateTransform()
 
 	@property
 	def scale(self):
@@ -156,11 +168,14 @@ class GameEntity(Events):
 	@scale.setter
 	def scale(self,val):
 		self._scale = val
-		self._transform_changed = True
+		self._invalidateTransform()
 
 	def spawn(self):
 		# Подписка на событие 'update' игрового мира.
 		self.subscribe(self.game,'update')
+
+		# Обновить трансформацию спрайта при первой отрисовке
+		self.game.invalidateEntityTransform(self)
 
 	def destroy(self):
 		# Отказ от всех подписок
