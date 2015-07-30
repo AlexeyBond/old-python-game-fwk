@@ -18,6 +18,7 @@ class MainWindow(pyglet.window.Window):
 
 		# Ограничение частоты кадров
 		pyglet.clock.set_fps_limit(60)
+		pyglet.clock.schedule(self._update)
 
 		Console.write('-- Starting --')
 
@@ -76,6 +77,9 @@ class MainWindow(pyglet.window.Window):
 			elif self.cur_screen.next != None:
 				self.change_screen(self.cur_screen.next)
 		super(MainWindow,self).dispatch_event(event_type,*args)
+
+	def _update(self,dt):
+		self.cur_screen.trigger('update',dt)
 
 	def on_draw(self):
 		'''

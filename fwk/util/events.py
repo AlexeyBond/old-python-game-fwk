@@ -259,7 +259,7 @@ class Shedule(object):
 			self.execute = lambda: callback(*cargs,**ckwargs)
 
 		def __cmp__(self,other):
-			return self._time.__cmp__(other._time)
+			return cmp(self._time,other._time)
 
 	'''
 	Расписание событий. Позволяет произойти события (или вызвать коллбэк) в

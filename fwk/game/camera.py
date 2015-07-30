@@ -1,5 +1,5 @@
 # coding=UTF-8
-import pyglet.gl
+from pyglet import gl
 
 class Camera(object):
 	'''
@@ -69,7 +69,7 @@ class Camera(object):
 		gl.glScalef(self.scale_x * self.scale,self.scale_y * self.scale,1)
 
 		# 1 - переместить (focus_x,focus_y) в (0,0)
-		gl.glTranslatef(-self.focus_x,-self.focus_y,0)
+		gl.glTranslatef(-self._focus_x,-self._focus_y,0)
 
 	def setController(self,controller):
 		'''

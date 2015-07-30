@@ -14,6 +14,9 @@ class AbstractDrawable(Events):
 			- Происходят при скрытии/показывании.
 		init- Происходит при создании объекта
 				Аргументы - аргументы, с которыми был вызван конструктор.
+		update
+			- Происходит переодически. Единственный аргумент - время (в
+				секундах), прошедшее с прошлого раза.
 		destroy
 			- Происходит при уничтожении объекта
 
@@ -31,6 +34,7 @@ class AbstractDrawable(Events):
 
 	events = [
 		'init',
+		'update',
 		('destroy','on_destroy'),
 		('vp:resize','on_viewport_resize'),
 		('show','on_show'),

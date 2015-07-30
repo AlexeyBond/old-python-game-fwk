@@ -1,5 +1,6 @@
 # coding=UTF-8
 import math
+import json
 
 from fwk.util.events import Events
 from fwk.util.events import Shedule
@@ -117,6 +118,11 @@ class Game(Events,Shedule):
 			entity = eclass()
 			self.addEntity(entity)
 			entity.configure(entdesc)
+
+	def loadFromJSON(self,fileName):
+		with open(fileName,'r') as jsfile:
+			data = json.load(jsfile)
+		self.loadEntities(data)
 
 	def createSprite(self,image,zindex=0,**kwargs):
 		'''
