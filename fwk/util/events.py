@@ -252,7 +252,7 @@ class Events(object):
 		handler._event_pre = True
 		return handler
 
-class Shedule(object):
+class Schedule(object):
 	class Task:
 		def __init__(self,time,callback,cargs,ckwargs):
 			self._time = time
@@ -268,13 +268,13 @@ class Shedule(object):
 	Доктор прописал использовать следующим образом:
 
 	e = Events()
-	s = Shedule()
+	s = Schedule()
 
-	s.sheduleIn(100,e.event('boom',1,2,3,foo='bar'))
+	s.scheduleIn(100,e.event('boom',1,2,3,foo='bar'))
 
 	Ну или так:
 
-	s.sheduleAfter(100,lambda x: cow.say('Hello, '+x),'world')
+	s.scheduleAfter(100,lambda x: cow.say('Hello, '+x),'world')
 	'''
 	def __init__(self):
 		self._tasks = []
@@ -291,21 +291,21 @@ class Shedule(object):
 			task.execute()
 			self._tasks.remove(task)
 
-	def sheduleIn(self,time,callcack,*args,**kwargs):
+	def scheduleIn(self,time,callcack,*args,**kwargs):
 		'''
 		Запланировать событие на заданное время.
 		'''
-		self._tasks.append(Shedule.Task(time,callcack,args,kwargs))
+		self._tasks.append(Schedule.Task(time,callcack,args,kwargs))
 		self._tasks.sort()
 
 		return self
 
-	def sheduleAfter(self,timeDelta,*args,**kwargs):
+	def scheduleAfter(self,timeDelta,*args,**kwargs):
 		'''
 		Запланировать событие через заданный промежуток времени после
 			текущего момента.
 		'''
-		return self.sheduleIn(self.currentTime + timeDelta,*args,**kwargs)
+		return self.scheduleIn(self.currentTime + timeDelta,*args,**kwargs)
 
 	def update(self,dt):
 		'''

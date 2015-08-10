@@ -3,19 +3,19 @@ import math
 import json
 
 from fwk.util.events import Events
-from fwk.util.events import Shedule
+from fwk.util.events import Schedule
 from fwk.game.entity import GameEntity
 
-class Game(Events,Shedule):
+class Game(Events,Schedule):
 	'''
 	Класс игрового мира. В игровом мире живут игровые сущности.
 
-	Наследуется от класса Events - для использования событий и Shedule - для
+	Наследуется от класса Events - для использования событий и Schedule - для
 		выполнения событий по расписанию (по счастливому совпадению, сигнатура
 		и семантика метода update совпадает с событием update игрового мира).
 
 	Аттрибуты:
-		currentTime	- текущее игровое время (унаследован от Shedule).
+		currentTime	- текущее игровое время (унаследован от Schedule).
 	События:
 		update		- происходит переодически; на это событие подписываются
 					  (напрямую или опосредованно) все или почти все сущности.
@@ -30,7 +30,7 @@ class Game(Events,Shedule):
 	def __init__(self):
 		# Возможно, не лучший способ инициализации.
 		Events.__init__(self)
-		Shedule.__init__(self)
+		Schedule.__init__(self)
 
 		# Словарь, содержащий множества тэггированных сущностей.
 		self._tagged_entities = {}

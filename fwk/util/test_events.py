@@ -3,12 +3,12 @@ from unittest import TestCase
 from mock import Mock
 
 from fwk.util.events import Events
-from fwk.util.events import Shedule
+from fwk.util.events import Schedule
 
 class EventsTest(TestCase):
 	def setUp(self):
 		self.events = Events()
-		self.assertTrue(self.events != None)
+		self.assertTrue(self.events is not None)
 
 class EventsBindTest(EventsTest):
 	def setUp(self):
@@ -202,38 +202,38 @@ class EventsCallbackTest(TestCase):
 		cb(3,4,baz='foo',qwe='rty')
 		self.mock.assert_called_with(1,2,3,4,bar='foo',baz='foo',qwe='rty')
 
-class EventsSheduleTest(TestCase):
+class EventsScheduleTest(TestCase):
 	def setUp(self):
 		self.mock1 = Mock()
 		self.mock2 = Mock()
-		self.shedule = Shedule()
+		self.schedule = Schedule()
 
-	def test_shedule_in(self):
-		self.shedule.sheduleIn(20,self.mock2,1,2,3,bar='baz')
-		self.shedule.sheduleIn(10,self.mock1,'qwe',asd='fgh')
+	def test_schedule_in(self):
+		self.schedule.scheduleIn(20,self.mock2,1,2,3,bar='baz')
+		self.schedule.scheduleIn(10,self.mock1,'qwe',asd='fgh')
 
-		self.shedule.perform_until_time(5)
+		self.schedule.perform_until_time(5)
 		self.assertEqual(self.mock1.call_count,0)
 		self.assertEqual(self.mock2.call_count,0)
 
-		self.shedule.perform_until_time(11)
+		self.schedule.perform_until_time(11)
 		self.mock1.assert_called_with('qwe',asd='fgh')
 		self.mock1.reset_mock()
 		self.assertEqual(self.mock2.call_count,0)
 
-		self.shedule.perform_until_time(21)
+		self.schedule.perform_until_time(21)
 		self.assertEqual(self.mock1.call_count,0)
 		self.mock2.assert_called_with(1,2,3,bar='baz')
 
-	def test_shedule_after(self):
-		self.shedule.sheduleAfter(10,self.mock1,1,2,3,asd='bar')
+	def test_schedule_after(self):
+		self.schedule.scheduleAfter(10,self.mock1,1,2,3,asd='bar')
 
-		self.shedule.update(9)
+		self.schedule.update(9)
 		self.assertEqual(self.mock1.call_count,0)
 
-		self.shedule.update(2)
+		self.schedule.update(2)
 		self.mock1.assert_called_with(1,2,3,asd='bar')
 		self.mock1.reset_mock()
 
-		self.shedule.update(2)
+		self.schedule.update(2)
 		self.assertEqual(self.mock1.call_count,0)
