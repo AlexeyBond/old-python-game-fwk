@@ -28,8 +28,8 @@ class GUIItemLayer(Layer):
 
 	@staticmethod
 	def _updateLayoutDim(vpSize,elMin,elMax,elSize):
-		elMax = vpSize - elMax if elMax != None else None
-		if (elMax == None) and (elMin == None):
+		elMax = vpSize - elMax if elMax is not None else None
+		if (elMax is None) and (elMin is None):
 			hvsz = vpSize / 2
 			hesz = elSize / 2
 			elMin = hvsz - hesz

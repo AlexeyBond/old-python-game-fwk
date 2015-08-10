@@ -60,14 +60,14 @@ class Game(Events,Schedule):
 		'''
 		prev = self._id_entities.get(_id,None)
 
-		if prev != None and prev != entity:
+		if prev is not None and prev is not entity:
 			prev.id = None
 
-		if entity.id != None:
+		if entity.id is not None:
 			self._id_entities[entity.id] = None
 			del self._id_entities[entity.id]
 
-		if _id != None:
+		if _id is not None:
 			self._id_entities[_id] = entity
 
 	def getEntityById(self,_id):
@@ -122,7 +122,7 @@ class Game(Events,Schedule):
 			_class = entdesc['_class']
 			eclass = GameEntity.getClass(_class)
 
-			if eclass == None:
+			if eclass is None:
 				print 'Invalid entity class name given:', _class
 				continue
 

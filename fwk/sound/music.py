@@ -11,7 +11,7 @@ def Play(name,loop=True):
 	'''
 	global _music_player
 
-	if _music_player == None:
+	if _music_player is None:
 		_music_player = pyglet.media.Player()
 
 	_music_player.pause()

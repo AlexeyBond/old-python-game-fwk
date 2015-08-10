@@ -65,9 +65,9 @@ class Events(object):
 			self.subscriber.trigger(self.sub_event,*args,**kwargs)
 
 		def isLike(self,objs,events):
-			if objs != None and (self.publisher not in objs):
+			if objs is not None and (self.publisher not in objs):
 				return False
-			if events != None and (self.sub_event not in events):
+			if events is not None and (self.sub_event not in events):
 				return False
 			return True
 
@@ -133,15 +133,15 @@ class Events(object):
 			callback	- обработчик
 		'''
 		# Just an optimisation
-		if event == None and callback == None:
+		if event is None and callback is None:
 			self._handlers = {}
 			return self
 
-		if event == None:
+		if event is None:
 			for event in self._handlers.keys():
 				self.off(event,callback)
 
-		if callback == None:
+		if callback is None:
 			self._handlers[event] = []
 			return self
 

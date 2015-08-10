@@ -61,7 +61,7 @@ class Attached:
 	def spawn(self):
 		self._parent = None
 
-	def attach(self,parent,props=['position','rotation','scale'],events=['update','destroy']):
+	def attach(self,parent,props=('position','rotation','scale'),events=('update','destroy')):
 		'''
 		Привязать сущность к новой родительской сущности.
 		'''
@@ -73,7 +73,7 @@ class Attached:
 			self.subscribe(parent,event)
 
 	def update(self,dt):
-		if self._parent == None:
+		if self._parent is None:
 			return
 
 		for prop in self._attach_props:

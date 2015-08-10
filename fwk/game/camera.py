@@ -77,7 +77,7 @@ class Camera(object):
 		'''
 		Установить управляющий объект для камеры.
 		'''
-		if controller != None:
+		if controller is not None:
 			controller.initCamera(self)
 		self._controller = controller
 
@@ -85,7 +85,7 @@ class Camera(object):
 		'''
 		Запросить новые параметры у управляющего объекта.
 		'''
-		if self._controller != None:
+		if self._controller is not None:
 			self._controller.updateCamera(self)
 
 	def unproject(self,screenPoint):
@@ -138,4 +138,4 @@ class CameraController(object):
 		'''
 		Вызывается перед отрисовкой каждого кадра с использованием камеры.
 		'''
-		raise 'CameraController.updateCamera() not overloaded.'
+		raise Exception('CameraController.updateCamera() not overloaded.')

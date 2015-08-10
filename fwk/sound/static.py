@@ -9,9 +9,9 @@ def Play(name):
 	Воспроизводит звук.
 	'''
 	snd = Preload(name)
-	return snd.play() if snd != None else None
+	return snd.play() if snd is not None else None
 
-def Preload(name,aliases=[]):
+def Preload(name,aliases=()):
 	'''
 	Загружает звук если он не был ранее загружен и назначает звуку псевдонимы.
 	'''
@@ -26,7 +26,7 @@ def Preload(name,aliases=[]):
 		snd = _static_sounds[name]
 
 	for alias in aliases:
-		if (alias not in _static_sounds) or (snd != None):
+		if (alias not in _static_sounds) or (snd is not None):
 			_static_sounds[alias] = snd
 
 	return snd

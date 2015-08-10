@@ -16,8 +16,8 @@ class Rect(object):
 
 	@staticmethod
 	def _init_dimension(minLimit,maxLimit,size):
-		minVal = minLimit if minLimit != None else (maxLimit-size)
-		maxVal = maxLimit if maxLimit != None else (minLimit+size)
+		minVal = minLimit if minLimit is not None else (maxLimit-size)
+		maxVal = maxLimit if maxLimit is not None else (minLimit+size)
 		return min(minVal, maxVal), max(minVal, maxVal)
 
 	def __init__(self,bottom=None,top=None,left=None,right=None,width=None,height=None):
@@ -95,7 +95,7 @@ class Rect(object):
 
 		Возвращает ссылку на объект, на котором был вызван метод.
 		'''
-		if scaleY == None:
+		if scaleY is None:
 			scaleY = scaleX
 
 		return self.resize(self.width*scaleX,self.height*scaleY,origin)
@@ -158,7 +158,7 @@ class Rect(object):
 
 		Возвращает ссылку на объект, на котором был вызван метод.
 		'''
-		if y == None:
+		if y is None:
 			y = x
 
 		self.left, self.right = Rect._inset_dimension(self.left,self.right,x)
@@ -170,7 +170,7 @@ class Rect(object):
 		'''
 		Выполняет действие, противоположное действию inset.
 		'''
-		if y == None:
+		if y is None:
 			y = x
 
 		return self.inset(-x,-y)
@@ -181,7 +181,7 @@ class Rect(object):
 
 		Точка, лежащая на границе прямоугольника, считается принадлежащей ему.
 		'''
-		if y == None:
+		if y is None:
 			x, y = x
 
 		return	(x >= self.left) and \

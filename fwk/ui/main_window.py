@@ -74,7 +74,7 @@ class MainWindow(pyglet.window.Window):
 			#TODO: Сделать обработку screen.next и screen.exit_required без привязки к событиям.
 			if self.cur_screen.exit_required:
 				self.close( )
-			elif self.cur_screen.next != None:
+			elif self.cur_screen.next is not None:
 				self.change_screen(self.cur_screen.next)
 		super(MainWindow,self).dispatch_event(event_type,*args)
 

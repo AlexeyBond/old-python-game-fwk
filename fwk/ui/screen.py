@@ -76,7 +76,7 @@ class Screen(AbstractDrawable):
 		'''
 		self._prevous = None
 
-		if prevous != None:
+		if prevous is not None:
 			prevous.hide()
 			if self.keep_prevous:
 				self._prevous = prevous

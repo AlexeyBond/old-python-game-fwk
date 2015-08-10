@@ -1,6 +1,4 @@
 # coding=UTF-8
-import math
-
 from fwk.util.all import *
 
 import fwk.game.entity_mixin as _entity_mixins
@@ -125,7 +123,7 @@ class GameEntity(Events):
 			self.show(visible)
 
 	def _invalidateTransform(self):
-		if self.game != None:
+		if self.game is not None:
 			self.game.invalidateEntityTransform(self)
 		self._transform_changed = True
 
