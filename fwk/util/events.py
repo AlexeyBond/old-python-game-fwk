@@ -85,12 +85,12 @@ class Events(object):
 		'''
 		Приватный метод, внутри которого происходит МАГИЯ!
 		'''
-		events = []
+		events = set()
 		classes = inspect.getmro(self.__class__)[::-1]
 
 		# Собираем списки событий по всей иерархии.
 		for cls in classes:
-			events += [pair for pair in [ (e if type(e) in (tuple,list) else [e,e]) for e in getattr(cls,'events',())] if pair not in events]
+			events.update([(e if type(e) in (tuple,list) else (e,e)) for e in getattr(cls,'events',())])
 
 		# И для каждого из них
 		for pair in events:
@@ -100,7 +100,7 @@ class Events(object):
 			# Для каждого класса..
 			for cls in classes:
 				# Если обработчик определён в классе ..
-				if handler in dir(cls):
+				if handler in cls.__dict__:
 					# то берём несвязанный метод-обработчик
 					unbound = getattr(cls,handler)
 					# Связываем и устанавливаем
