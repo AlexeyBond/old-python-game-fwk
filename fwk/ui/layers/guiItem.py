@@ -14,14 +14,17 @@ class GUIItemLayer(Layer):
 		('ui:hover-end','on_hover_end'),
 		('ui:focus-start','on_focus_start'),
 		('ui:focus-end','on_focus_end'),
-		('ui:click','on_click')
+		('ui:click','on_click'),
+		('ui:layout-updated','on_layout_updated')
 	]
 
-	def init(self,layout):
+	def init(self,layout,**kwargs):
 		self._layout = layout
 
 		self.hover = False
 		self.focus = False
+
+		self.rect = None
 
 	def on_add_to_screen(self,screen):
 		self._updateLayout(**(self._layout))
@@ -36,12 +39,14 @@ class GUIItemLayer(Layer):
 			elMax = hvsz + hesz
 		return elMin, elMax, elSize
 
-	def _updateLayout(self,top=None,bottom=None,left=None,right=None,width=None,height=None,offset_x=0,offset_y=0):
+	def _updateLayout(self,top=None,bottom=None,left=None,right=None,width=None,height=None,offset_x=0,offset_y=0,**kwargs):
 		left, right, width = GUIItemLayer._updateLayoutDim(self.width,left,right,width)
 		bottom, top, height = GUIItemLayer._updateLayoutDim(self.height,bottom,top,height)
 
-		self._gui_item_rect = Rect(top=top,bottom=bottom,left=left,right=right,width=width,height=height)
-		self._gui_item_rect.move(offset_x, offset_y)
+		self.rect = Rect(top=top,bottom=bottom,left=left,right=right,width=width,height=height)
+		self.rect.move(offset_x, offset_y)
+
+		self.trigger('ui:layout-updated')
 
 	@property
 	def layout(self):
@@ -73,7 +78,7 @@ class GUIItemLayer(Layer):
 		self._updateLayout(**(self._layout))
 
 	def _updateHoverStatus(self,curX,curY):
-		hoverStatusNew = self._gui_item_rect.hasPoint(curX,curY)
+		hoverStatusNew = self.rect.hasPoint(curX,curY)
 		if hoverStatusNew != self.hover:
 			self.hover = hoverStatusNew
 			return self.trigger('ui:hover-start' if hoverStatusNew else 'ui:hover-end')
@@ -89,7 +94,7 @@ class GUIItemLayer(Layer):
 		return self._updateHoverStatus(x,y)
 
 	def on_mouse_press(self,x,y,button,mod):
-		if self._gui_item_rect.hasPoint(x,y):
+		if self.rect.hasPoint(x,y):
 			self.focus = True
 			return self.trigger('ui:focus-start')
 
@@ -97,7 +102,7 @@ class GUIItemLayer(Layer):
 		if self.focus:
 			self.focus = False
 			self.trigger('ui:focus-end')
-			if self._gui_item_rect.hasPoint(x,y):
+			if self.rect.hasPoint(x,y):
 				self.trigger('ui:click',x,y)
 		return self._updateHoverStatus(x,y)
 
@@ -107,4 +112,4 @@ class GUIItemLayer(Layer):
 			color.rgb = (255,0,0)
 		elif self.hover:
 			color.rgb = (0,255,0)
-		DrawWireframeRect(self._gui_item_rect,color)
+		DrawWireframeRect(self.rect,color)
