@@ -73,6 +73,9 @@ class Rect(object):
 
 	@staticmethod
 	def _resize_dimension(curMin,curMax,orig,size):
+		if curMax == curMin:
+			off = size /2
+			return curMin - off, curMax + off
 		dd = size * (orig - curMin) / (curMax - curMin)
 		return (orig - dd),(orig + size - dd)
 
