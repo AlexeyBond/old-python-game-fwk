@@ -48,7 +48,7 @@ class Events(object):
 			объекта, добавляя примеси, определяющие обработчики событий, не
 			теряя гибкости управления порядком выполнения обработчиков.
 	'''
-	class Subscribtion:
+	class Subscription:
 		def __init__(self,publisher,subscriber,event):
 			self.publisher = publisher
 			self.subscriber = subscriber
@@ -212,9 +212,9 @@ class Events(object):
 			if type(event) in (tuple,list):
 				self.subscribe(obj,*event)
 			else:
-				subscribtion = Events.Subscribtion(obj,self,event)
-				subscribtion.enable()
-				self._subscriptions.append(subscribtion)
+				subscription = Events.Subscription(obj,self,event)
+				subscription.enable()
+				self._subscriptions.append(subscription)
 
 		return self
 
