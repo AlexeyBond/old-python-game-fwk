@@ -41,6 +41,7 @@ class MainWindow(pyglet.window.Window):
 		glOrtho(0,width,0,height,-1,1)
 		glMatrixMode(GL_MODELVIEW)
 		glLoadIdentity( )
+		glEnable(GL_BLEND)
 
 	def change_screen(self,screen):
 		'''

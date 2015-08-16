@@ -1,10 +1,11 @@
 #!/usr/bin/python
 # coding=UTF-8
+import os
 import unittest
 
-# from fwk.test.all import *
+os.chdir('..')
 
 def load_tests(loader, tests, pattern):
-	return unittest.defaultTestLoader.discover('fwk','test_*.py')
+	return unittest.defaultTestLoader.discover('.','test_*.py')
 
 unittest.main(verbosity=100)
