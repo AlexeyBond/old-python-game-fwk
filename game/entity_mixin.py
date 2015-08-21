@@ -163,9 +163,7 @@ class Sprite:
 
 	def after_transform_changed(self):
 		if self._sprite is not None:
-			self._sprite.set_position(*(self.position))
-			self._sprite.scale = self.scale
-			self._sprite.rotation = self.rotation
+			self.game.applySpriteTransform(self,self._sprite)
 
 class Animation(Sprite):
 	'''
