@@ -4,6 +4,7 @@ import pyglet
 
 from fwk.util.events import Events
 from fwk.util.events import Schedule
+from fwk.util.geometry import *
 from fwk.game.entity import GameEntity
 
 class Game(Events,Schedule):
@@ -152,6 +153,38 @@ class Game(Events,Schedule):
 		batch = self._sprite_batches[zindex]
 
 		return pyglet.sprite.Sprite(img=image,batch=batch,**kwargs)
+
+	def applySpriteTransform(self,entity,sprite):
+		'''
+		Применяет трансформацию сущности к спрайту.
+		'''
+		sprite.set_position(*(entity.position))
+		sprite.scale = entity.scale
+		sprite.rotation = entity.rotation
+
+	def transformChangeHook(self,entity):
+		'''
+		Вызывается сущностью после изменения трансформации.
+
+		Может ограничивать перемещение сущности или зацикливать пространство.
+		'''
+		pass
+
+	def distance(self,posa,posb):
+		'''
+		Вычисляет расстояние между двумя точками.
+
+		Может производить нестандартные вычисления для зацикленных пространств.
+		'''
+		return distance(posa,posb)
+
+	def directionFromTo(self,posFrom,posTo):
+		'''
+		Вычисляет вектор направления между двумя точками.
+
+		Может производить нестандартные вычисления для зацикленных пространств.
+		'''
+		return posTo[0] - posFrom[0], posTo[1] - posTo[1]
 
 	def drawSprites(self):
 		'''

@@ -11,6 +11,9 @@ class MainWindow(pyglet.window.Window):
 	Класс главного окна
 	'''
 
+	# Нужен т.к. событие on_resize происходит до завершения выполнения конструктора.
+	cur_screen = None
+
 	def __init__(self):
 		pyglet.window.Window.__init__(self,resizable=True)
 
@@ -72,11 +75,12 @@ class MainWindow(pyglet.window.Window):
 		'''
 		if event_type in MainWindow._EVENTS_PYGLET_TO_DRAWABLE_MAP:
 			self.cur_screen.trigger(MainWindow._EVENTS_PYGLET_TO_DRAWABLE_MAP[event_type],*args)
-			#TODO: Сделать обработку screen.next и screen.exit_required без привязки к событиям.
-			if self.cur_screen.exit_required:
-				self.close( )
-			elif self.cur_screen.next is not None:
-				self.change_screen(self.cur_screen.next)
+
+		if self.cur_screen and self.cur_screen.exit_required:
+			self.close( )
+		elif self.cur_screen and self.cur_screen.next is not None:
+			self.change_screen(self.cur_screen.next)
+
 		super(MainWindow,self).dispatch_event(event_type,*args)
 
 	def _update(self,dt):

@@ -128,6 +128,7 @@ class GameEntity(Events):
 		self._transform_changed = True
 
 	def after_transform_changed(self):
+		self.game.transformChangeHook(self)
 		self._transform_changed = False
 
 	@property
