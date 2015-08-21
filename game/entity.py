@@ -23,6 +23,7 @@ class GameEntity(Events):
 				dt		- время, прошедшее с момента, когда событие произошло
 						  в прошлый раз.
 		destroy		- происходит перед уничтожением сущности.
+					  (обработчик on_destroy).
 		hide		- происходит когда сущность скрывается
 					  (обработчик: on_hide).
 		show		- происходит когда сущность становится видимой
@@ -70,7 +71,6 @@ class GameEntity(Events):
 		self._visible = False
 
 		self.game = None
-		self.sprite = None
 		self._id = None
 
 	events = [
@@ -78,7 +78,7 @@ class GameEntity(Events):
 		('configured','on_configured'),
 		('after-transform-changed','after_transform_changed'),
 		'update',
-		'destroy',
+		('destroy','on_destroy'),
 		('hide','on_hide'),
 		('show','on_show')
 	]
@@ -175,9 +175,19 @@ class GameEntity(Events):
 		# Обновить трансформацию спрайта при первой отрисовке
 		self.game.invalidateEntityTransform(self)
 
-	def destroy(self):
+	def on_destroy(self):
 		# Отказ от всех подписок
 		self.unsubscribe_all()
+		# Удалить из списков тэггированных сущностей
+		self.clearTags()
+		# Освободить id если был
+		self.id = None
+
+	def destroy(self):
+		'''
+		Уничтожает сущность
+		'''
+		self.trigger('destroy')
 
 	def show(self,show=True):
 		'''
@@ -199,10 +209,10 @@ class GameEntity(Events):
 		self._visible = False
 
 	def addTags(self,*tags):
-		pass
+		self.game.setEntityTags(self,*tags)
 
 	def clearTags(self,*tags):
-		pass
+		self.game.clearEntityTags(self)
 
 	def configure(self,config):
 		'''

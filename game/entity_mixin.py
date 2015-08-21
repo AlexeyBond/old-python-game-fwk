@@ -5,6 +5,9 @@
 
 from fwk.util.events import Events
 from fwk.game.camera import CameraController
+from fwk.util.animation import AnimationsList
+from fwk.util.graphics import LoadTexture
+from fwk.util.graphics import ApplyTextureAnchor
 
 class Movement:
 	'''
@@ -68,9 +71,12 @@ class Attached:
 		self._attach_props = props
 		self._attach_events = events
 		self._parent = parent
+
 		self.unsubscribe_all()
-		for event in self._attach_events:
-			self.subscribe(parent,event)
+
+		eparent = self._parent or self.game
+		for event in eparent._attach_events:
+			self.subscribe(eparent,event)
 
 	def update(self,dt):
 		if self._parent is None:
@@ -106,3 +112,97 @@ class CameraTarget(CameraController):
 	def updateCamera(self,camera):
 		for cam_prop, my_prop in self.cameraAttachMap.items():
 			setattr(camera,cam_prop,getattr(self,my_prop))
+
+class Sprite:
+	'''
+	Примесь, рисующая сущность в виде спрайта.
+	'''
+	@Events.before
+	def spawn(self):
+		self._z_index = getattr(self,'z_index',0)
+		self._sprite = None
+		self._sprite_anchor = 'default'
+
+	@property
+	def sprite(self):
+		return self._sprite.image if self._sprite is not None else None
+
+	@sprite.setter
+	def sprite(self,val):
+		img = val
+		if type(img) in (str,unicode):
+			img = LoadTexture(img,anchor=self._sprite_anchor)
+
+		if self._sprite is None:
+			self._sprite = self.game.createSprite(img,zindex=self._z_index)
+			self._sprite.visible = self.visible
+		else:
+			self._sprite.image = img
+
+	@property
+	def spriteAnchor(self):
+		return self._sprite_anchor
+
+	@spriteAnchor.setter
+	def spriteAnchor(self,val):
+		self._sprite_anchor = val
+		if self._sprite:
+			ApplyTextureAnchor(self._sprite.image,self._sprite_anchor)
+
+	def on_show(self):
+		if self._sprite is not None:
+			self._sprite.visible = True
+
+	def on_hide(self):
+		if self._sprite is not None:
+			self._sprite.visible = False
+
+	def on_destroy(self):
+		if self._sprite is not None:
+			self._sprite.delete()
+
+	def after_transform_changed(self):
+		if self._sprite is not None:
+			self._sprite.set_position(*(self.position))
+			self._sprite.scale = self.scale
+			self._sprite.rotation = self.rotation
+
+class Animation(Sprite):
+	'''
+	Примись, анимирующая спрайтовую сущность.
+	'''
+	def spawn(self):
+		self._animations_list = None
+		self._animation = None
+
+	@property
+	def animations(self):
+		'''
+		Свойство, возвращающее список анимаций.
+
+		Установить можно передав имя JSON-файла с анимацией, словарь с
+			описанием анимации или загруженный список анимаций.
+		'''
+		return self._animations_list
+
+	@animations.setter
+	def animations(self,val):
+		if type(val) in (str,unicode):
+			self._animations_list = AnimationsList.fromJSONFile(val)
+		elif type(val) is AnimationsList:
+			self._animations_list = val
+		else:
+			self._animations_list = AnimationsList(dict(val))
+
+		if self._animation:
+			self.animation = self._animation
+
+	@property
+	def animation(self):
+		return self._animation
+
+	@animation.setter
+	def animation(self,val):
+		self._animation = val
+		if self._animations_list is not None:
+			self.sprite = self._animations_list[val]
