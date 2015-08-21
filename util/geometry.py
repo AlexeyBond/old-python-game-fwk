@@ -36,5 +36,5 @@ def rotateVector(vector,angle):
 	Поворачивает вектор на заданный угол.
 	'''
 	r1 = directionFromAngle(angle)
-	r0 = perpendicularDirection(r0)
+	r0 = perpendicularDirection(r1)
 	return vector[0] * r0[0] + vector[1] * r1[0],vector[0] * r0[1] + vector[1] * r1[1]

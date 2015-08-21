@@ -86,12 +86,21 @@ class AnimationsList:
 		self.preload()
 		return self._animations[name]
 
+	_CACHE = {}
+
 	@staticmethod
 	def fromJSONFile(fileName):
 		'''
 		Создаёт список анимаций из JSON-файла.
 		'''
+		if fileName in AnimationsList._CACHE:
+			return AnimationsList._CACHE[fileName]
+
+		print 'Loading animations list from {fileName}...'.format(**locals())
+
 		with open(fileName) as dataFile:
 			description = json.load(dataFile)
 
-		return AnimationsList(description)
+		lst = AnimationsList(description)
+		AnimationsList._CACHE[fileName] = lst
+		return lst

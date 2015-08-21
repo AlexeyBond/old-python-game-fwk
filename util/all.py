@@ -5,3 +5,4 @@ from rect import *
 from events import *
 from color import *
 from geometry import *
+from animation import *
