@@ -12,7 +12,7 @@ def ApplyTextureAnchor(texture,anchor='default'):
 		"center" - по центру текстуры
 		(x,y) или [x,y] - в точке {x;y}
 	'''
-	if anchor == 'center':
+	if str(anchor) == 'center':
 		texture.anchor_x = texture.width // 2
 		texture.anchor_y = texture.height // 2
 	elif type(anchor) in (tuple,list):

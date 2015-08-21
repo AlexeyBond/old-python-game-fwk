@@ -2,6 +2,7 @@
 
 from fwk.util.rect import Rect
 from fwk.util.graphics import LoadTexture
+from fwk.util.graphics import ApplyTextureAnchor
 from pyglet.image import AnimationFrame, Animation
 import json
 
@@ -48,13 +49,15 @@ class AnimationsList:
 		duration = float(desc['t'])
 		anchor = str(desc.get('anchor','default'))
 
-		image = LoadTexture(image_name,anchor=anchor)
+		image = LoadTexture(image_name)
 
 		if 'rect' in desc:
 			image_rect = self._parseRect(desc['rect'])
 			image = image.get_region(
 				image_rect.left,image_rect.bottom,
 				image_rect.width,image_rect.height).get_texture()
+
+		ApplyTextureAnchor(image,anchor)
 
 		return AnimationFrame(image,duration)
 
