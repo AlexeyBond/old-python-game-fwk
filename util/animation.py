@@ -24,7 +24,14 @@ class AnimationsList:
 		'img': '<имя_изображения>',
 		't': '<продолжительность_кадра>',
 		'rect': <регион_изображения>,
-		'anchor': <якорь>
+		'anchor': <якорь>,
+		'transform': <трансформация>
+	}
+
+	<трансформация> ::= {
+		'flip_x': [boolean],
+		'flip_y': [boolean],
+		'rotate': [integer]
 	}
 
 	Регион изображения может быть задан объектом класса Rect, или словарём,
@@ -56,6 +63,9 @@ class AnimationsList:
 			image = image.get_region(
 				image_rect.left,image_rect.bottom,
 				image_rect.width,image_rect.height).get_texture()
+
+		if 'transform' in desc:
+			image = image.get_transform(**(desc['transform']))
 
 		ApplyTextureAnchor(image,anchor)
 
