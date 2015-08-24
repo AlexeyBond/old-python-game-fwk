@@ -116,7 +116,7 @@ class MainWindow(pyglet.window.Window):
 		'''
 		if key in (KEY.QUOTELEFT,KEY.ASCIITILDE):
 			Console.visible = not Console.visible
-		elif key == KEY.ESCAPE and mod == KEY.MOD_CTRL:
+		elif key == KEY.ESCAPE:
 			self.close( )
 
 	def on_close(self):
@@ -124,4 +124,4 @@ class MainWindow(pyglet.window.Window):
 		Обработка закрытия окна [X]рестикомъ.
 		'''
 		print 'Window closed by user'
-		exit(0)
+		self.close()
