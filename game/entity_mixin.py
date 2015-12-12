@@ -75,7 +75,7 @@ class Attached:
 		self.unsubscribe_all()
 
 		eparent = self._parent or self.game
-		for event in eparent._attach_events:
+		for event in self._attach_events:
 			self.subscribe(eparent,event)
 
 	def update(self,dt):
